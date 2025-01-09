@@ -4,15 +4,12 @@
 \alias{app_metrics}
 \title{Dashboard metrics}
 \usage{
-app_metrics(metric_ids, r6_data, date_f = NA, ...)
+app_metrics(metric_ids, r6_data, ...)
 }
 \arguments{
 \item{metric_ids}{ID of the metric to be used}
 
 \item{r6_data}{R6 object that contains the app data (i.e. app_data/dash_data)}
-
-\item{date_f}{date field to group data by. Default, NA, wont group data by
-date. Quoted string.}
 
 \item{...}{other fields to group data by}
 }

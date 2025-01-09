@@ -99,8 +99,6 @@ filter_date <- function(df, date_f, r6_data) {
 #'
 #' @param metric_ids ID of the metric to be used
 #' @param r6_data R6 object that contains the app data (i.e. app_data/dash_data)
-#' @param date_f date field to group data by. Default, NA, wont group data by
-#' date. Quoted string.
 #' @param ... other fields to group data by
 #'
 #' @importFrom PHEindicatormethods phe_rate
@@ -109,13 +107,16 @@ filter_date <- function(df, date_f, r6_data) {
 
 app_metrics <- function(metric_ids,
                         r6_data,
-                        date_f = NA,
                         ...) {
+
+
+  #metric_ids <- input$metric_id
+  #r6_data <- dash_data
+  #vars <- c("month", "speed_limit", "calender_year")
 
   # get metric details
   metric_details <- r6_data$metric_meta |>
     filter(.data$metric_id %in% metric_ids)
-
 
   # check metric id in r6 meta
   if (nrow(metric_details) == 0) {
@@ -125,32 +126,9 @@ app_metrics <- function(metric_ids,
   # get the data
   data <- r6_data$stats19
 
-  # if using date_f, check the field is in the data/date_ref (join to date_ref
-  # if need to - note: this needs comparing against calculating on the fly for
-  # efficiency)
-  if (!is.na(date_f)) {
-
-    if (date_f == "date") {
-
-      date_f <- sym(date_f)
-
-    } else if (date_f %in% colnames(r6_data$date_ref)) {
-
-      date_f <- sym(date_f)
-
-      data <- data |>
-        left_join(r6_data$date_ref |>
-                    select(.data$date, {{ date_f }}),
-                  by = "date")
-
-    }
-  }
-
   # if using date fields in the ..., add them in from date_ref (again, needs
   # assessing if more efficient on the fly than storing date_ref)
   dot_fields <- list(...)
-
-  #dot_fields <- t1(data, {{ x }}, {{ r }})
 
   date_dot_fields <- dot_fields[dot_fields %in% colnames(r6_data$date_ref) &
                                   dot_fields != "date"]
@@ -178,7 +156,8 @@ app_metrics <- function(metric_ids,
       # data
       metric_data <- data |>
         filter_date(date_f = date, r6_data = r6_data) |>
-        count({{ date_f }}, ..., name = "value") |>
+        mutate(metric_id = m_id) |>
+        count(..., name = "value") |>
         mutate(metric_id = m_id,
                lowercl = NA,
                uppercl = NA,
@@ -194,7 +173,8 @@ app_metrics <- function(metric_ids,
       # data
       metric_data <- data |>
         filter_date(date_f = date, r6_data = r6_data) |>
-        group_by({{ date_f }}, ...) |>
+        mutate(metric_id = m_id) |>
+        group_by(...) |>
         summarise(denominator = n(),
                   numerator = sum(.data$number_of_casualties),
                   .groups = "drop") |>
@@ -210,7 +190,7 @@ app_metrics <- function(metric_ids,
   }
 
   output_data <- janitor::clean_names(output_data) |>
-    remove_field(.data$na)
+    remove_field(na)
 
   # return data
   return(setNames(list(output_data, metric_details),

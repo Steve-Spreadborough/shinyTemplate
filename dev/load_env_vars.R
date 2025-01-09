@@ -21,7 +21,7 @@ dash_data$date_range <- input$date_range
 input$metric_id <- c(
   "Number of collisions" = "n_collisions",
   "Rate of casualties per 100 collisions" = "rate_casual_per_collision"
-  )[2]
+  )
 
 input$plot_group <- c(
   "None" = "none",
@@ -29,7 +29,7 @@ input$plot_group <- c(
   "Speed limit" =  "speed_limit",
   "Day of week"  = "day_of_week",
   "Year" = "calender_year"
-  )[1]
+  )[3]
 
 input$plot_facet <- c(
   "None" = "none",
@@ -37,7 +37,7 @@ input$plot_facet <- c(
   "Speed limit" =  "speed_limit",
   "Day of week"  = "day_of_week",
   "Year" = "calender_year"
-  )[1]
+  )[5]
 
 input$plot_x_axis <- c(
   "Date" = "date",
@@ -45,11 +45,18 @@ input$plot_x_axis <- c(
   "Year" = "iso_year",
   "Financial Quarter" = "fq_desc",
   "Rolling 3 months" = "roll_3month",
-  "ISO Week" = "iso_year_week"
-  )[3]
+  "ISO Week" = "iso_year_week",
+  "Metric" = "metric_id",
+  "Value" = "value"
+  )[8]
 
-input$plot_cis <- c("Auto", "Yes", "No")[1]
+input$plot_y_axis <- c(
+  "Value" = "value",
+  "Metric" = "metric_id"
+)[2]
+
+input$plot_cis <- c("Auto", "Yes", "No")[3]
 
 input$plot_legend <- c("Auto", "Yes", "No")[1]
 
-input$plot_type <- c("Line", "Bar")[1]
+input$plot_type <- c("Line", "Bar")[2]

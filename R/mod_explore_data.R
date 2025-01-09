@@ -9,6 +9,7 @@
 #' @importFrom shiny NS tagList
 #' @import ggplot2
 #' @importFrom plotly ggplotly renderPlotly plotlyOutput
+#' @importFrom DT renderDT
 #' @import dplyr
 
 mod_explore_data_ui <- function(id) {
@@ -33,9 +34,9 @@ mod_explore_data_ui <- function(id) {
         mainPanel = mainPanel(
 
           fillRow(
-            flex = c(7, 3),
-            fillCol(
-              width = "98%",
+            #flex = c(7, 3),
+            #fillCol(
+              #width = "98%",
               column(12,
                      style = 'border: 1px solid lightgrey; border-radius: 25px', #overflow-y: scroll',
                      br(),
@@ -46,7 +47,7 @@ mod_explore_data_ui <- function(id) {
                     plotly::plotlyOutput(ns("plot_explore")),
                      br(), br()
                      ),
-              )
+              #)
           )
         ),
 
@@ -75,25 +76,18 @@ mod_explore_data_ui <- function(id) {
                                  "Year" = "calender_year",
                                  "Financial Quarter" = "fq_desc",
                                  "Rolling 3 months" = "roll_3month",
-                                 "ISO Week" = "iso_year_week"
+                                 "ISO Week" = "iso_year_week",
+                                 "Metric" = "metric_id",
+                                 "Value" = "value"
                                  ),
                                selected = "date"),
-                   selectInput(inputId = ns("plot_x_axis"),
-                               label = "x axis",
+                   selectInput(inputId = ns("plot_y_axis"),
+                               label = "y axis",
                                choices = c(
-                                 "Date" = "date",
-                                 "Week" = "week_start",
-                                 "Month" = "month_year",
-                                 "Year" = "calender_year",
-                                 "Financial Quarter" = "fq_desc",
-                                 "Rolling 3 months" = "roll_3month",
-                                 "ISO Week" = "iso_year_week"
+                                 "Value" = "value",
+                                 "Metric" = "metric_id"
                                ),
                                selected = "date"),
-                   #selectInput(inputId = ns("plot_y_axis"),
-                  #             label = "y axis",
-                  #             choices = c("List of data fields here"),
-                  #             selected = "List of data fields here"),
                    selectInput(inputId = ns("plot_group"),
                                label = "Group data",
                                choices = c(
@@ -179,14 +173,8 @@ mod_explore_data_server <- function(id, dash_data){
 
      #})
 
-    # render plot to explore data
-    output$plot_explore <- renderPlotly({
-
-      # update plot if 'master filter' date range updated
-      gargoyle::watch("date_range")
-
-      # log plot update
-      cat_where(where = paste0(whereami(), " - update plot_explore"))
+    # function to get data for explore plot
+    explore_plot_details <- function() {
 
       # set group
       if (input$plot_group == "none") {
@@ -203,42 +191,202 @@ mod_explore_data_server <- function(id, dash_data){
       }
 
       # set x axis - note: if group/facet by year, need to set x axis accordingly
-      if (input$plot_facet %in% c("calender_year") |
-          input$plot_group %in% c("calender_year")) {
+      if (input$plot_x_axis %in% c("metric_id", "value")) {
 
+        data_x_axis <- NULL
+        plot_x_axis <- sym(input$plot_x_axis)
+        x_name <- names(input$plot_x_axis)
+
+      } else if (input$plot_facet %in% c("calender_year") |
+                 input$plot_group %in% c("calender_year")) {
 
         if (input$plot_x_axis == "date") {
 
+          data_x_axis <- "day_month"
           plot_x_axis <- "day_month"
           x_name <- "Date"
 
         } else if (input$plot_x_axis == "week_start") {
 
+          data_x_axis <- "iso_week"
           plot_x_axis <- "iso_week"
           x_name <- "Week"
 
         } else if (input$plot_x_axis == "month_year") {
 
+          data_x_axis <- "month"
           plot_x_axis <- "month"
           x_name <- "Month"
+
+        } else {
+
+          data_x_axis <- sym(input$plot_x_axis)
+          plot_x_axis <- sym(input$plot_x_axis)
+          x_name <- names(input$plot_x_axis)
 
         }
 
       } else {
 
-        plot_x_axis <- input$plot_x_axis
+        data_x_axis <- sym(input$plot_x_axis)
+        plot_x_axis <- sym(input$plot_x_axis)
         x_name <- names(input$plot_x_axis)
 
       }
 
-      x_field <- sym(plot_x_axis)
+      # set y axis - note: don't give option to use date on y axis
+      if (input$plot_y_axis %in% c("metric_id", "value")) {
+
+        data_y_axis <- NULL
+        plot_y_axis <- sym(input$plot_y_axis)
+        y_name <- names(input$plot_y_axis)
+
+      } else {
+
+        data_y_axis <- sym(input$plot_y_axis)
+        plot_y_axis <- sym(input$plot_y_axis)
+        y_name <- names(input$plot_y_axis)
+
+      }
+
 
       # get data
       plot_data <- app_metrics(metric_ids = input$metric_id,
                                r6_data = dash_data,
-                               date_f = plot_x_axis,
+                               {{ data_x_axis }},
+                               {{ data_y_axis }},
                                {{ plot_group }},
                                {{ plot_facet }})
+
+      # add all the details
+      plot_data$plot_x_axis <- plot_x_axis
+      plot_data$plot_y_axis <- plot_y_axis
+      plot_data$x_name <- x_name
+      plot_data$y_name <- y_name
+      plot_data$plot_group <- plot_group
+      plot_data$plot_facet <- plot_facet
+      plot_data$title <- paste0(plot_data$details$metric_name, collapse = "/")
+      plot_data$subtitle <- paste0(dash_data$date_range, collapse = " to ")
+
+      return(plot_data)
+
+    }
+
+    # update data & details for plot
+    explore_plot_data <- reactive({
+
+      # update plot if 'master filter' date range updated
+      gargoyle::watch("date_range")
+
+      # log plot update
+      cat_where(where = paste0(whereami(), " - update plot_data"))
+
+      explore_plot_details()
+
+    })
+
+
+    # rend table with data
+    output$explore_data <- DT::renderDT({
+      explore_plot_data$data
+    })
+
+    # render plot to explore data
+    output$plot_explore <- renderPlotly({
+
+      # update plot if 'master filter' date range updated
+      gargoyle::watch("date_range")
+
+      # log plot update
+      cat_where(where = paste0(whereami(), " - update plot_explore"))
+
+      ## set group
+      #if (input$plot_group == "none") {
+      #  plot_group <- NA
+      #} else {
+      #  plot_group <- sym(input$plot_group)
+      #}
+#
+      ## set facet
+      #if (input$plot_facet %in% c("none", "metric_id")) {
+      #  plot_facet <- NA
+      #} else {
+      #  plot_facet <- sym(input$plot_facet)
+      #}
+#
+      ## set x axis - note: if group/facet by year, need to set x axis accordingly
+      #if (input$plot_x_axis %in% c("metric_id", "value")) {
+#
+      #  data_x_axis <- NULL
+      #  plot_x_axis <- sym(input$plot_x_axis)
+      #  x_name <- names(input$plot_x_axis)
+#
+      #} else if (input$plot_facet %in% c("calender_year") |
+      #           input$plot_group %in% c("calender_year")) {
+#
+      #  if (input$plot_x_axis == "date") {
+#
+      #    data_x_axis <- "day_month"
+      #    plot_x_axis <- "day_month"
+      #    x_name <- "Date"
+#
+      #  } else if (input$plot_x_axis == "week_start") {
+#
+      #    data_x_axis <- "iso_week"
+      #    plot_x_axis <- "iso_week"
+      #    x_name <- "Week"
+#
+      #  } else if (input$plot_x_axis == "month_year") {
+#
+      #    data_x_axis <- "month"
+      #    plot_x_axis <- "month"
+      #    x_name <- "Month"
+#
+      #  } else {
+#
+      #    data_x_axis <- sym(input$plot_x_axis)
+      #    plot_x_axis <- sym(input$plot_x_axis)
+      #    x_name <- names(input$plot_x_axis)
+#
+      #  }
+#
+      #} else {
+#
+      #  data_x_axis <- sym(input$plot_x_axis)
+      #  plot_x_axis <- sym(input$plot_x_axis)
+      #  x_name <- names(input$plot_x_axis)
+#
+      #}
+#
+      ## set y axis - note: don't give option to use date on y axis
+      #if (input$plot_y_axis %in% c("metric_id", "value")) {
+#
+      #  data_y_axis <- NULL
+      #  plot_y_axis <- sym(input$plot_y_axis)
+      #  y_name <- names(input$plot_y_axis)
+#
+      #} else {
+#
+      #  data_y_axis <- sym(input$plot_y_axis)
+      #  plot_y_axis <- sym(input$plot_y_axis)
+      #  y_name <- names(input$plot_y_axis)
+#
+      #}
+#
+#
+      ## get data
+      #plot_data <- app_metrics(metric_ids = input$metric_id,
+      #                         r6_data = dash_data,
+      #                         {{ data_x_axis }},
+      #                         {{ data_y_axis }},
+      #                         {{ plot_group }},
+      #                         {{ plot_facet }})
+#
+#
+
+      plot_data <- explore_plot_data()
+
+      #plot_data <- explore_plot_details()
 
       # if using group, make sure its a factor
       if (input$plot_group != "none") {
@@ -258,10 +406,16 @@ mod_explore_data_server <- function(id, dash_data){
         )
       }
 
+      # get fields for plot
+      plot_x_axis <- plot_data$plot_x_axis
+      plot_y_axis <- plot_data$plot_y_axis
+      plot_group <- plot_data$plot_group
+      plot_facet <- plot_data$plot_facet
+
       # create the plot
       plot <- plot_data$data |>
-        ggplot(aes(x = {{ x_field }},
-                   y = .data$value,
+        ggplot(aes(x = {{ plot_x_axis }},
+                   y = {{ plot_y_axis }},
                    group = {{ plot_group }},
                    colour = {{ plot_group }}))
 
@@ -275,7 +429,8 @@ mod_explore_data_server <- function(id, dash_data){
       } else if (input$plot_type == "Bar") {
 
         plot <- plot +
-          geom_bar(stat = "identity")
+          geom_bar(stat = "identity", position = position_dodge())
+          #geom_bar(stat = "identity")
 
       }
 
@@ -283,7 +438,7 @@ mod_explore_data_server <- function(id, dash_data){
 
       # add confidence intervals
       if (input$plot_cis %in% c("Auto", "Yes") &
-          grepl("rate", tolower(plot_data$details$value_type))) {
+          (TRUE %in% grepl("rate", tolower(plot_data$details$value_type)))) {
 
         plot <- plot +
           geom_errorbar(
@@ -319,16 +474,10 @@ mod_explore_data_server <- function(id, dash_data){
 
       }
 
-
-      # write plot title
-      title <- paste0(plot_data$details$metric_name, collapse = "/") %>%
-        paste0(", ", paste0(dash_data$date_range, collapse = " - "))
-
-      # set title & labels
+      # set labels
       plot <- plot  +
         labs(
-          x = x_name,
-          title = title
+          x = plot_data$x_name
         )
 
       ggplotly(plot)
