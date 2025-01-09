@@ -28,9 +28,12 @@ mod_explore_data_ui <- function(id) {
         # set sidebar options
         position = "right",
         width = 420,
+        fillable = TRUE,
+        fill = TRUE,
 
         # Inputs - divide into 3 tabs (data, graph & formatting)
-        navset_card_underline(
+        #navset_card_underline(
+        navset_bar(
 
           # Data inputs
           nav_panel("Data",
@@ -109,7 +112,7 @@ mod_explore_data_ui <- function(id) {
       # main panel to display plot & data
       navset_card_underline(
 
-        title = "Visualizations",
+        title = textOutput(ns("plot_title")),
 
         # Panel with plot ----
         nav_panel("Plot", plotly::plotlyOutput(ns("plot_explore"))),
@@ -157,105 +160,6 @@ mod_explore_data_server <- function(id, dash_data){
 
      #})
 
-    # function to get data for explore plot
-    explore_plot_details <- function() {
-
-      # set group
-      if (input$plot_group == "none") {
-        plot_group <- NA
-      } else {
-        plot_group <- sym(input$plot_group)
-      }
-
-      # set facet
-      if (input$plot_facet %in% c("none", "metric_id")) {
-        plot_facet <- NA
-      } else {
-        plot_facet <- sym(input$plot_facet)
-      }
-
-      # set x axis - note: if group/facet by year, need to set x axis accordingly
-      if (input$plot_x_axis %in% c("metric_id", "value")) {
-
-        data_x_axis <- NULL
-        plot_x_axis <- sym(input$plot_x_axis)
-        x_name <- names(input$plot_x_axis)
-
-      } else if (input$plot_facet %in% c("calender_year") |
-                 input$plot_group %in% c("calender_year")) {
-
-        if (input$plot_x_axis == "date") {
-
-          data_x_axis <- "day_month"
-          plot_x_axis <- "day_month"
-          x_name <- "Date"
-
-        } else if (input$plot_x_axis == "week_start") {
-
-          data_x_axis <- "iso_week"
-          plot_x_axis <- "iso_week"
-          x_name <- "Week"
-
-        } else if (input$plot_x_axis == "month_year") {
-
-          data_x_axis <- "month"
-          plot_x_axis <- "month"
-          x_name <- "Month"
-
-        } else {
-
-          data_x_axis <- sym(input$plot_x_axis)
-          plot_x_axis <- sym(input$plot_x_axis)
-          x_name <- names(input$plot_x_axis)
-
-        }
-
-      } else {
-
-        data_x_axis <- sym(input$plot_x_axis)
-        plot_x_axis <- sym(input$plot_x_axis)
-        x_name <- names(input$plot_x_axis)
-
-      }
-
-      # set y axis - note: don't give option to use date on y axis
-      if (input$plot_y_axis %in% c("metric_id", "value")) {
-
-        data_y_axis <- NULL
-        plot_y_axis <- sym(input$plot_y_axis)
-        y_name <- names(input$plot_y_axis)
-
-      } else {
-
-        data_y_axis <- sym(input$plot_y_axis)
-        plot_y_axis <- sym(input$plot_y_axis)
-        y_name <- names(input$plot_y_axis)
-
-      }
-
-
-      # get data
-      plot_data <- app_metrics(metric_ids = input$metric_id,
-                               r6_data = dash_data,
-                               {{ data_x_axis }},
-                               {{ data_y_axis }},
-                               {{ plot_group }},
-                               {{ plot_facet }})
-
-      # add all the details
-      plot_data$plot_x_axis <- plot_x_axis
-      plot_data$plot_y_axis <- plot_y_axis
-      plot_data$x_name <- x_name
-      plot_data$y_name <- y_name
-      plot_data$plot_group <- plot_group
-      plot_data$plot_facet <- plot_facet
-      plot_data$title <- paste0(plot_data$details$metric_name, collapse = "/")
-      plot_data$subtitle <- paste0(dash_data$date_range, collapse = " to ")
-
-      return(plot_data)
-
-    }
-
     # update data & details for plot
     explore_plot_data <- reactive({
 
@@ -263,17 +167,36 @@ mod_explore_data_server <- function(id, dash_data){
       gargoyle::watch("date_range")
 
       # log plot update
-      #cat_where(where = paste0(whereami(), " - update plot_data"))
+      cat_where(where = paste0(whereami(), " - update plot_data"))
 
-      explore_plot_details()
+      explore_plot_details(input, dash_data)
 
     })
 
+    # set plot title
+    output$plot_title <- renderPrint({
 
-    # rend table with data
+
+      plot_data <- explore_plot_data()
+      #plot_data <- explore_plot_details()
+
+      cat(plot_data$title)
+    })
+
+    # set plot subtitle
+    output$plot_subtitle <- renderPrint({
+
+
+      plot_data <- explore_plot_data()
+      #plot_data <- explore_plot_details()
+
+      cat(plot_data$subtitle)
+    })
+
+    # render table with data
     output$explore_data <- renderTable({
 
-      #cat_where(where = paste0(whereami(), " - update table_data"))
+      cat_where(where = paste0(whereami(), " - update table_data"))
 
       # get the data for the table
       data <- explore_plot_data()
@@ -287,7 +210,7 @@ mod_explore_data_server <- function(id, dash_data){
       gargoyle::watch("date_range")
 
       # log plot update
-      #cat_where(where = paste0(whereami(), " - update plot_explore"))
+      cat_where(where = paste0(whereami(), " - update plot_explore"))
 
       # get the data for the plot
       plot_data <- explore_plot_data()

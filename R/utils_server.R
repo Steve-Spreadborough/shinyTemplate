@@ -200,3 +200,129 @@ app_metrics <- function(metric_ids,
 }
 
 
+#' Caluclaye details for 'explore data' plot
+#'
+#' @param ui_inputs the input list from the UI/module.
+#' @param mod_data R6 object with dashboard data
+
+explore_plot_details <- function(ui_inputs = input,
+                                 mod_data = dash_data) {
+
+  # create progress bar
+  if (shiny::isRunning()) {
+
+    # Create a Progress object
+    progress <- shiny::Progress$new()
+
+    # set number data processes to update on
+    n_steps <- 3
+
+    # Make sure it closes when we exit this reactive, even if there's an error
+    on.exit(progress$close())
+
+    progress$set(message = "Updating data", value = 0)
+  }
+
+  # set group
+  if (ui_inputs$plot_group == "none") {
+    plot_group <- NA
+  } else {
+    plot_group <- sym(ui_inputs$plot_group)
+  }
+
+  # set facet
+  if (ui_inputs$plot_facet %in% c("none", "metric_id")) {
+    plot_facet <- NA
+  } else {
+    plot_facet <- sym(ui_inputs$plot_facet)
+  }
+
+  # set x axis - note: if group/facet by year, need to set x axis accordingly
+  if (ui_inputs$plot_x_axis %in% c("metric_id", "value")) {
+
+    data_x_axis <- NULL
+    plot_x_axis <- sym(ui_inputs$plot_x_axis)
+    x_name <- names(ui_inputs$plot_x_axis)
+
+  } else if (ui_inputs$plot_facet %in% c("calender_year") |
+             ui_inputs$plot_group %in% c("calender_year")) {
+
+    if (ui_inputs$plot_x_axis == "date") {
+
+      data_x_axis <- sym("day_month")
+      plot_x_axis <- sym("day_month")
+      x_name <- "Date"
+
+    } else if (ui_inputs$plot_x_axis == "week_start") {
+
+      data_x_axis <- sym("iso_week")
+      plot_x_axis <- sym("iso_week")
+      x_name <- "Week"
+
+    } else if (ui_inputs$plot_x_axis == "month_year") {
+
+      data_x_axis <- sym("month")
+      plot_x_axis <- sym("month")
+      x_name <- "Month"
+
+    } else {
+
+      data_x_axis <- sym(ui_inputs$plot_x_axis)
+      plot_x_axis <- sym(ui_inputs$plot_x_axis)
+      x_name <- names(ui_inputs$plot_x_axis)
+
+    }
+
+  } else {
+
+    data_x_axis <- sym(ui_inputs$plot_x_axis)
+    plot_x_axis <- sym(ui_inputs$plot_x_axis)
+    x_name <- names(ui_inputs$plot_x_axis)
+
+  }
+
+  # set y axis - note: don't give option to use date on y axis
+  if (ui_inputs$plot_y_axis %in% c("metric_id", "value")) {
+
+    data_y_axis <- NULL
+    plot_y_axis <- sym(ui_inputs$plot_y_axis)
+    y_name <- names(ui_inputs$plot_y_axis)
+
+  } else {
+
+    data_y_axis <- sym(ui_inputs$plot_y_axis)
+    plot_y_axis <- sym(ui_inputs$plot_y_axis)
+    y_name <- names(ui_inputs$plot_y_axis)
+
+  }
+
+  if (shiny::isRunning()){progress$inc(1/n_steps)}
+
+
+  # get data
+  plot_data <- app_metrics(metric_ids = ui_inputs$metric_id,
+                           r6_data = mod_data,
+                           {{ data_x_axis }},
+                           {{ data_y_axis }},
+                           {{ plot_group }},
+                           {{ plot_facet }})
+
+  if (shiny::isRunning()) {progress$inc(2/n_steps)}
+
+  # add all the details
+  plot_data$plot_x_axis <- plot_x_axis
+  plot_data$plot_y_axis <- plot_y_axis
+  plot_data$x_name <- x_name
+  plot_data$y_name <- y_name
+  plot_data$plot_group <- plot_group
+  plot_data$plot_facet <- plot_facet
+  plot_data$title <- paste0(plot_data$details$metric_name, collapse = "/")
+  plot_data$subtitle <- paste0(mod_data$date_range, collapse = " to ")
+
+  if (shiny::isRunning()) {progress$inc(3/n_steps)}
+
+  return(plot_data)
+
+}
+
+

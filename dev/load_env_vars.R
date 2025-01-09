@@ -48,7 +48,7 @@ input$plot_x_axis <- c(
   "ISO Week" = "iso_year_week",
   "Metric" = "metric_id",
   "Value" = "value"
-  )[8]
+  )[2]
 
 input$plot_y_axis <- c(
   "Value" = "value",

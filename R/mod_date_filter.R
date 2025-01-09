@@ -58,7 +58,7 @@ mod_date_filter_server <- function(id, dash_data){
     observeEvent(input$date_range, {
 
       # log
-      #cat_where(where = paste0(whereami(), " - input$date_range"))
+      cat_where(where = paste0(whereami(), " - input$date_range"))
 
       # update dash_data
       dash_data$date_range <- c(input$date_range[1], input$date_range[2])
@@ -95,7 +95,7 @@ mod_date_filter_server <- function(id, dash_data){
     observeEvent(input$date_period, {
 
       # log
-      #cat_where(where = paste0(whereami(), " - input$date_period"))
+      cat_where(where = paste0(whereami(), " - input$date_period"))
 
       # get the dates for the period selected
       dates <- filter_ref_date(df = dash_data$date_ref,
