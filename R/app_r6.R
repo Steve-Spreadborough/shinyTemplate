@@ -16,6 +16,7 @@
 #' @import dplyr
 #' @import stringr
 #' @import stats19
+#' @importFrom shiny Progress
 #'
 #' @export
 
@@ -57,6 +58,21 @@ app_data <- R6Class(
     #' @description
     #' Create R6 class object to get data for App.
     initialize = function() {
+
+      # give indication downloading data
+      if (shiny::isRunning()) {
+
+        # Create a Progress object
+        progress <- shiny::Progress$new()
+
+        # set number data processes to update on
+        n_data <- 4
+
+        # Make sure it closes when we exit this reactive, even if there's an error
+        on.exit(progress$close())
+
+        progress$set(message = "Loading data", value = 0)
+      }
 
       # hard coded start & end date
       start_date <- as.Date("2021-01-01")
@@ -115,8 +131,11 @@ app_data <- R6Class(
           roll_year = as.integer(floor((roll_month+11)/12)),
           all_dates = 1)
 
+      # update data download
+      if (shiny::isRunning()) {progress$inc(1/n_data)}
+
       # log - make it red as should only happen once
-      #cat_where(where = paste0(whereami(), " - created date_ref"), color = "red")
+      cat_where(where = paste0(whereami(), " - created date_ref"), color = "red")
 
       # meta data - note: probably best to have as a table somewhere to be
       # read in (e.g. pinned on posit connect/sql db etc). Written out here
@@ -141,20 +160,40 @@ app_data <- R6Class(
                metric_detail = V3,
                value_type = V4)
 
-      # read in stats19 data
+
+      # read in stats19 2021 data
       suppressMessages(
         suppressWarnings(
-          self$stats19 <- rbind(
-            get_stats19(2021, silent = TRUE),
-            get_stats19(2022, silent = TRUE)
-            ) |>
-            mutate(number_of_casualties = as.numeric(number_of_casualties),
-                   number_of_vehicles = as.numeric(number_of_vehicles))
-          )
+          stats19_2021 <- get_stats19(2021, silent = TRUE)
+        )
       )
 
+      # update data download
+      if (shiny::isRunning()) {progress$inc(2/n_data)}
+
+      # read in stats19 2022 data
+      suppressMessages(
+        suppressWarnings(
+          stats19_2022 <- get_stats19(2022, silent = TRUE)
+        )
+      )
+
+      # update data download
+      if (shiny::isRunning()) {progress$inc(3/n_data)}
+
+      # combine data
+      self$stats19 <- rbind(
+        stats19_2021,
+        stats19_2022
+        ) |>
+        mutate(number_of_casualties = as.numeric(number_of_casualties),
+               number_of_vehicles = as.numeric(number_of_vehicles))
+
+      # update data download
+      if (shiny::isRunning()) {progress$inc(4/n_data)}
+
       # log - make it red as should only happen once
-      #cat_where(where = paste0(whereami(), " - created stats19"), color = "red")
+      cat_where(where = paste0(whereami(), " - created stats19"), color = "red")
 
 
     }
