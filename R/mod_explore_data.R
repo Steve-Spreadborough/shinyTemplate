@@ -11,128 +11,112 @@
 #' @importFrom plotly ggplotly renderPlotly plotlyOutput
 #' @importFrom DT renderDT
 #' @import dplyr
+#' @import bslib
+#' @import gargoyle
 
 mod_explore_data_ui <- function(id) {
 
   ns <- NS(id)
 
-  # make plot fit entire screen
-  plot_style <- paste0("#",ns("plot_explore"),
-                       "{height: calc(100vh - 220px) !important;}")
-
   tagList(
 
-    fillPage(
+    page_sidebar(
 
-      tags$style(type = "text/css", plot_style),
+      # Sidebar panel for inputs ----
+      sidebar = sidebar(
 
-      titlePanel("Explore data"),
+        # set sidebar options
+        position = "right",
+        width = 420,
 
-      sidebarLayout(
+        # Inputs - divide into 3 tabs (data, graph & formatting)
+        navset_card_underline(
 
-        # data exploration plot
-        mainPanel = mainPanel(
+          # Data inputs
+          nav_panel("Data",
+                    selectInput(inputId = ns("metric_id"),
+                                label = "Metric",
+                                multiple = TRUE,
+                                choices = c(
+                                  "Number of collisions" = "n_collisions",
+                                  "Rate of casualties per 100 collisions" = "rate_casual_per_collision"
+                                ),
+                                selected = "n_collisions"),
+                    selectInput(inputId = ns("plot_x_axis"),
+                                label = "x axis",
+                                choices = c(
+                                  "Date" = "date",
+                                  "Week" = "week_start",
+                                  "Month" = "month_year",
+                                  "Year" = "calender_year",
+                                  "Financial Quarter" = "fq_desc",
+                                  "Rolling 3 months" = "roll_3month",
+                                  "ISO Week" = "iso_year_week",
+                                  "Metric" = "metric_id",
+                                  "Value" = "value"
+                                ),
+                                selected = "date"),
+                    selectInput(inputId = ns("plot_y_axis"),
+                                label = "y axis",
+                                choices = c(
+                                  "Value" = "value",
+                                  "Metric" = "metric_id"
+                                ),
+                                selected = "date"),
+                    selectInput(inputId = ns("plot_group"),
+                                label = "Group data",
+                                choices = c(
+                                  "None" = "none",
+                                  "Metric" = "metric_id",
+                                  "Accident severity" = "accident_severity",
+                                  "Police force" = "police_force",
+                                  "Road speed limit" =  "speed_limit",
+                                  "Day of week"  = "day_of_week",
+                                  "Year" = "calender_year"
+                                ),
+                                selected = "None"),
+                    selectInput(inputId = ns("plot_facet"),
+                                label = "Facet plot",
+                                choices = c(
+                                  "None" = "none",
+                                  "Metric" = "metric_id",
+                                  "Accident severity" = "accident_severity",
+                                  "Police force" = "police_force",
+                                  "Road speed limit" =  "speed_limit",
+                                  "Day of week"  = "day_of_week",
+                                  "Year" = "calender_year"
+                                ),
+                                selected = "None")
+                    ),
 
-          fillRow(
-            #flex = c(7, 3),
-            #fillCol(
-              #width = "98%",
-              column(12,
-                     style = 'border: 1px solid lightgrey; border-radius: 25px', #overflow-y: scroll',
-                     br(),
-                     # title and info button
-                     #div(HTML('<b>Main plot</b> '),
-                    #     style = 'display: inline-block;'),
-                     #br(), br(),
-                    plotly::plotlyOutput(ns("plot_explore")),
-                     br(), br()
-                     ),
-              #)
+          nav_panel("Graph",
+                    radioButtons(inputId = ns("plot_cis"),
+                                 label = "Confidence intervals",
+                                 choices = c("Auto", "Yes", "No"),
+                                 selected = "Auto"),
+                    radioButtons(inputId = ns("plot_legend"),
+                                 label = "Legend",
+                                 choices = c("Auto", "Yes", "No"),
+                                 selected = "Auto"),
+                    radioButtons(inputId = ns("plot_type"),
+                                 label = "Plot type",
+                                 choices = c("Line", "Bar"),
+                                 selected = "Line")
+                    )
           )
         ),
 
-        # set the extra controls to the right
-        position = "right",
+      # main panel to display plot & data
+      navset_card_underline(
 
-        # extra controls for data exploration plot
-        sidebarPanel = sidebarPanel(
-          tabsetPanel(
-          tabPanel("Data",
-                   #uiOutput(ns("metric_select")),
-                   selectInput(inputId = ns("metric_id"),
-                               label = "Metric",
-                               multiple = TRUE,
-                               choices = c(
-                                 "Number of collisions" = "n_collisions",
-                                 "Rate of casualties per 100 collisions" = "rate_casual_per_collision"
-                               ),
-                               selected = "n_collisions"),
-                   selectInput(inputId = ns("plot_x_axis"),
-                               label = "x axis",
-                               choices = c(
-                                 "Date" = "date",
-                                 "Week" = "week_start",
-                                 "Month" = "month_year",
-                                 "Year" = "calender_year",
-                                 "Financial Quarter" = "fq_desc",
-                                 "Rolling 3 months" = "roll_3month",
-                                 "ISO Week" = "iso_year_week",
-                                 "Metric" = "metric_id",
-                                 "Value" = "value"
-                                 ),
-                               selected = "date"),
-                   selectInput(inputId = ns("plot_y_axis"),
-                               label = "y axis",
-                               choices = c(
-                                 "Value" = "value",
-                                 "Metric" = "metric_id"
-                               ),
-                               selected = "date"),
-                   selectInput(inputId = ns("plot_group"),
-                               label = "Group data",
-                               choices = c(
-                                 "None" = "none",
-                                 "Metric" = "metric_id",
-                                 "Accident severity" = "accident_severity",
-                                 "Police force" = "police_force",
-                                 "Road speed limit" =  "speed_limit",
-                                 "Day of week"  = "day_of_week",
-                                 "Year" = "calender_year"
-                               ),
-                               selected = "None"),
-                   selectInput(inputId = ns("plot_facet"),
-                               label = "Facet plot",
-                               choices = c(
-                                 "None" = "none",
-                                 "Metric" = "metric_id",
-                                 "Accident severity" = "accident_severity",
-                                 "Police force" = "police_force",
-                                 "Road speed limit" =  "speed_limit",
-                                 "Day of week"  = "day_of_week",
-                                 "Year" = "calender_year"
-                               ),
-                               selected = "None")
-                   ),
-          tabPanel("Graph",
-                   radioButtons(inputId = ns("plot_cis"),
-                                label = "Confidence intervals",
-                                choices = c("Auto", "Yes", "No"),
-                                selected = "Auto"),
-                   radioButtons(inputId = ns("plot_legend"),
-                                label = "Legend",
-                                choices = c("Auto", "Yes", "No"),
-                                selected = "Auto"),
-                   radioButtons(inputId = ns("plot_type"),
-                                label = "Plot type",
-                                choices = c("Line", "Bar"),
-                                selected = "Line"),
+        title = "Visualizations",
 
-          ),
+        # Panel with plot ----
+        nav_panel("Plot", plotly::plotlyOutput(ns("plot_explore"))),
 
-          tabPanel("Other settings 2")
-          )
-          )
-      )
+        # Panel with table ----
+        nav_panel("Table", tableOutput(ns("explore_data")))
+        )
     )
   )
 }
@@ -279,7 +263,7 @@ mod_explore_data_server <- function(id, dash_data){
       gargoyle::watch("date_range")
 
       # log plot update
-      cat_where(where = paste0(whereami(), " - update plot_data"))
+      #cat_where(where = paste0(whereami(), " - update plot_data"))
 
       explore_plot_details()
 
@@ -287,8 +271,13 @@ mod_explore_data_server <- function(id, dash_data){
 
 
     # rend table with data
-    output$explore_data <- DT::renderDT({
-      explore_plot_data$data
+    output$explore_data <- renderTable({
+
+      #cat_where(where = paste0(whereami(), " - update table_data"))
+
+      # get the data for the table
+      data <- explore_plot_data()
+      data$data
     })
 
     # render plot to explore data
@@ -298,92 +287,9 @@ mod_explore_data_server <- function(id, dash_data){
       gargoyle::watch("date_range")
 
       # log plot update
-      cat_where(where = paste0(whereami(), " - update plot_explore"))
+      #cat_where(where = paste0(whereami(), " - update plot_explore"))
 
-      ## set group
-      #if (input$plot_group == "none") {
-      #  plot_group <- NA
-      #} else {
-      #  plot_group <- sym(input$plot_group)
-      #}
-#
-      ## set facet
-      #if (input$plot_facet %in% c("none", "metric_id")) {
-      #  plot_facet <- NA
-      #} else {
-      #  plot_facet <- sym(input$plot_facet)
-      #}
-#
-      ## set x axis - note: if group/facet by year, need to set x axis accordingly
-      #if (input$plot_x_axis %in% c("metric_id", "value")) {
-#
-      #  data_x_axis <- NULL
-      #  plot_x_axis <- sym(input$plot_x_axis)
-      #  x_name <- names(input$plot_x_axis)
-#
-      #} else if (input$plot_facet %in% c("calender_year") |
-      #           input$plot_group %in% c("calender_year")) {
-#
-      #  if (input$plot_x_axis == "date") {
-#
-      #    data_x_axis <- "day_month"
-      #    plot_x_axis <- "day_month"
-      #    x_name <- "Date"
-#
-      #  } else if (input$plot_x_axis == "week_start") {
-#
-      #    data_x_axis <- "iso_week"
-      #    plot_x_axis <- "iso_week"
-      #    x_name <- "Week"
-#
-      #  } else if (input$plot_x_axis == "month_year") {
-#
-      #    data_x_axis <- "month"
-      #    plot_x_axis <- "month"
-      #    x_name <- "Month"
-#
-      #  } else {
-#
-      #    data_x_axis <- sym(input$plot_x_axis)
-      #    plot_x_axis <- sym(input$plot_x_axis)
-      #    x_name <- names(input$plot_x_axis)
-#
-      #  }
-#
-      #} else {
-#
-      #  data_x_axis <- sym(input$plot_x_axis)
-      #  plot_x_axis <- sym(input$plot_x_axis)
-      #  x_name <- names(input$plot_x_axis)
-#
-      #}
-#
-      ## set y axis - note: don't give option to use date on y axis
-      #if (input$plot_y_axis %in% c("metric_id", "value")) {
-#
-      #  data_y_axis <- NULL
-      #  plot_y_axis <- sym(input$plot_y_axis)
-      #  y_name <- names(input$plot_y_axis)
-#
-      #} else {
-#
-      #  data_y_axis <- sym(input$plot_y_axis)
-      #  plot_y_axis <- sym(input$plot_y_axis)
-      #  y_name <- names(input$plot_y_axis)
-#
-      #}
-#
-#
-      ## get data
-      #plot_data <- app_metrics(metric_ids = input$metric_id,
-      #                         r6_data = dash_data,
-      #                         {{ data_x_axis }},
-      #                         {{ data_y_axis }},
-      #                         {{ plot_group }},
-      #                         {{ plot_facet }})
-#
-#
-
+      # get the data for the plot
       plot_data <- explore_plot_data()
 
       #plot_data <- explore_plot_details()
@@ -442,7 +348,7 @@ mod_explore_data_server <- function(id, dash_data){
 
         plot <- plot +
           geom_errorbar(
-            aes(ymin = .data$lowercl, ymax = .data$uppercl),
+            aes(ymin = lowercl, ymax = uppercl),
             width = 0.2,
             position = position_dodge(0.9)
             )

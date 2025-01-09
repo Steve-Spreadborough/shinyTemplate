@@ -7,6 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
+#' @import bslib
 
 mod_intro_ui <- function(id) {
 
@@ -14,72 +15,38 @@ mod_intro_ui <- function(id) {
 
   tagList(
 
-    #tags$style(
-    #  "#sidebarItemExpanded {
-    #        overflow: auto;
-    #        max-height: 100vh;
-    #    }"
-    #),
+    page_fillable(
+      h1("Introduction"),
 
-    fluidPage(
-      fluidRow(
-        width = 12,
+      layout_columns(
 
-        # 1st column - main intro & info text for dashboard
-        column(8,
-               style = 'border: 1px solid lightgrey; border-radius: 25px', #overflow-y: scroll',
-               br(),
-               # title and info button
-               div(HTML('<b>Title here</b> '),
-                   style = 'display: inline-block;'),
-               br(), br(),
-               # Text
-               p("Text here", style = "font-family: 'times'"),
-               br(), br()
-               ),
+        card(
+          full_screen = TRUE,
+          p("Text here")
+          ),
 
-        # 2nd column for plots
-        column(4,
+        layout_columns(
+          card(
+            card_header("plot 1"),
+            full_screen = TRUE,
+            p("Plot here")
+          ),
+          card(
+            full_screen = TRUE,
+            card_header("plot 2"),
+            p("Plot here")
+          ),
+          card(
+            full_screen = TRUE,
+            card_header("plot 3"),
+            p("Plot here")
+          ),
+          col_widths = c(12, 12, 12)
+        ),
 
-               # plot 1
-               fluidRow(style = 'border: 1px solid lightgrey; border-radius: 25px; margin-left: 10px; padding-left: 10px;',
-                        br(),
-                        # Plot title
-                        div(HTML('<b>Title here</b> '),
-                            style = 'display: inline-block;'),
-                        br(), br(),
-                        # plot
-                        #plotOutput('trend_plot', height = '175px')
-                        p("Plot here")
-                        ),
-               br(),
-
-               # plot2
-               fluidRow(style = 'border: 1px solid lightgrey; border-radius: 25px; margin-left: 10px; padding-left: 10px;',
-                        br(),
-                        # bar plot title and info button
-                        div(HTML('<b>Title here</b> '), style = 'display: inline-block;'),
-                        br(), br(),
-                        # bar plot
-                        #plotOutput('bar_plot', height = '175px')
-                        p("Plot here")
-                        ),
-               br(),
-
-               # plot3
-               fluidRow(style = 'border: 1px solid lightgrey; border-radius: 25px; margin-left: 10px; padding-left: 10px;',
-                        br(),
-                        # bar plot title and info button
-                        div(HTML('<b>Title here</b> '),
-                            style = 'display: inline-block;'),
-                        br(), br(),
-                        # plot
-                        #plotOutput('bar_plot', height = '175px')
-                        p("Plot here")
-                        )
-               )
+        col_widths = c(8, 4)
         )
-      )
+    )
     )
 }
 

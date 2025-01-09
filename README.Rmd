@@ -46,7 +46,7 @@ for demonstration/exploration of code purposes only.
 As a basic, this application includes the following set up:
 
 - Code structure following `{golem}`
-- Shiny dashboard layout using `shinydashboardPlus`
+- Shiny dashboard layout using `{bslib}`
 - Modules with UIs & servers
 - R6 class objects for data storage and access across modules
 - Reactivity of R6 objects using `gargoyle`

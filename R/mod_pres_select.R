@@ -7,8 +7,7 @@
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'
 #' @importFrom shiny NS tagList
-#' @import shinydashboardPlus
-#' @importFrom shinydashboard menuItem
+#' @import bslib
 #' @import gargoyle
 #'
 #' @noRd
@@ -19,10 +18,7 @@ mod_pres_select_ui <- function(id) {
 
 
   tagList(
-
-    shinydashboard::menuItem(
       textOutput(ns("tidy_data_summary"))
-      )
   )
 
 }

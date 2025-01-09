@@ -44,18 +44,18 @@ filter_ref_date <- function(df, period, start, end) {
     if (grepl("week", period)) {
 
       output <- df %>%
-        filter(.data$roll_week >= 1 & .data$roll_week <= n_periods)
+        filter(roll_week >= 1 & roll_week <= n_periods)
 
 
     } else if (grepl("month", period)) {
 
       output <- df %>%
-        filter(.data$roll_month >= 1 & .data$roll_month <= n_periods)
+        filter(roll_month >= 1 & roll_month <= n_periods)
 
     } else if (grepl("year", period)) {
 
       output <- df %>%
-        filter(.data$roll_year >= 1 & .data$roll_year <= n_periods)
+        filter(roll_year >= 1 & roll_year <= n_periods)
 
     } else {
 
@@ -116,7 +116,7 @@ app_metrics <- function(metric_ids,
 
   # get metric details
   metric_details <- r6_data$metric_meta |>
-    filter(.data$metric_id %in% metric_ids)
+    filter(metric_id %in% metric_ids)
 
   # check metric id in r6 meta
   if (nrow(metric_details) == 0) {
@@ -162,7 +162,7 @@ app_metrics <- function(metric_ids,
                lowercl = NA,
                uppercl = NA,
                numerator = NA,
-               denominator = .data$value)
+               denominator = value)
 
       output_data <- rbind(output_data, metric_data)
 
@@ -176,18 +176,20 @@ app_metrics <- function(metric_ids,
         mutate(metric_id = m_id) |>
         group_by(...) |>
         summarise(denominator = n(),
-                  numerator = sum(.data$number_of_casualties),
+                  numerator = sum(number_of_casualties),
                   .groups = "drop") |>
-        phe_rate(x = .data$numerator,
-                 n = .data$denominator,
+        phe_rate(x = numerator,
+                 n = denominator,
                  multiplier = 100) |>
         mutate(metric_id = m_id) |>
-        select(-.data$confidence, -.data$statistic, -.data$method)
+        select(-confidence, -statistic, -method)
 
       output_data <- rbind(output_data, metric_data)
 
     }
   }
+
+  globalVariables()
 
   output_data <- janitor::clean_names(output_data) |>
     remove_field(na)

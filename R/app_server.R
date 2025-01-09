@@ -5,12 +5,13 @@
 #' @import shiny
 #' @import whereami
 #' @import reactlog
+#' @importFrom utils globalVariables
 #'
 #' @noRd
 
 app_server <- function(input, output, session) {
 
-  whereami::cat_where(whereami::whereami())
+  #whereami::cat_where(whereami::whereami())
 
   # create the dashboard data class object to hold the data
   dash_data <- app_data$new()
@@ -22,6 +23,6 @@ app_server <- function(input, output, session) {
   # run module servers
   mod_pres_select_server("pres_select_ui", dash_data = dash_data)
   mod_date_filter_server("date_filter_ui", dash_data = dash_data)
-  mod_explore_data_server("explore_data_ui", dash_data = dash_data)
-
+  mod_explore_data_server("explore_data_1", dash_data = dash_data)
+  mod_dev_layout_server("dev_layout_1")
 }
