@@ -5,9 +5,6 @@
 #' @param request Internal parameter for `{shiny}`.
 #'
 #' @import shiny
-#' @import shinydashboardPlus
-#' @importFrom shinydashboard dashboardBody menuSubItem tabItem tabItems
-#' sidebarMenu menuItem
 #'
 #' @noRd
 
@@ -18,75 +15,113 @@ app_ui <- function(request) {
     # Leave this function for adding external resources
     golem_add_external_resources(),
 
-    # Create Shiny dashboard
-    shinydashboardPlus::dashboardPage(
+    # navbar in sidebar
+    # note: remove code if not using (this causes issues with pages being
+    # 'fillable' due to the nav_content function which haven't resolved,
+    # see: https://rstudio.github.io/bslib/articles/filling/index.html)
+    #page_sidebar(
+    #
+    #  title = "Shiny template",
+    #
+    #  sidebar = sidebar(
+    #
+    #    # Filter summary
+    #    bslib::accordion(
+    #      #bslib::accordion_panel(
+    #        value = "Data summary",
+    #        mod_pres_select_ui("pres_select_ui")
+    #      #)
+    #    ),
+    #
+    #    # Page navigation
+    #    bslib::accordion(
+    #      #bslib::accordion_panel(
+    #      #  value= "Tabs",
+    #        nav_tab(
+    #          #span(id = "intro", bs_icon("database"), span("Introduction")),
+    #          #span(id = "explore", bs_icon("bar-chart-fill"), span("Explore data")),
+    #          span(id = "dev", bs_icon("database"), span("Dev layout"))
+    #          )
+    #       # )
+    #      ),
+    #
+    #    # 'Master' filters
+    #    bslib::accordion(
+    #      bslib::accordion_panel(
+    #        "Date filter",
+    #        mod_date_filter_ui("date_filter_ui")
+    #        )
+    #      )
+    #
+    #    ),
+    #
+    #  # Page modules
+    #  nav_content(
+    #    #div(id = "intro", mod_intro_ui("intro_1")),
+    #    #div(id = "explore", mod_explore_data_ui("explore_data_ui")),
+    #    div(id = "dev", mod_dev_layout_ui("dev_layout_ui"))
+    #  )
+    #)
 
-      # set header
-      header = shinydashboardPlus::dashboardHeader(
-        title = "shinyTemplate"
+
+    # veritcal nav bar
+    page_navbar(
+
+      # settings
+      title = "ShinyTemplate",
+      bg = "#2D89C8",
+      inverse = TRUE,
+
+      # sidebar ---------------------------------------------------------------#
+      sidebar = sidebar(
+
+        width = 350,
+
+        # Filter summary
+        bslib::card(
+          #bslib::accordion_panel(
+          #value = "Data summary",
+          #full_screen = TRUE,
+          #card_header("Data: "),
+          mod_pres_select_ui("pres_select_ui")
+        ),
+
+        # 'Master' filters
+        bslib::accordion(
+          bslib::accordion_panel(
+            "Date filter",
+            mod_date_filter_ui("date_filter_ui")
+          )
+        )
+
+      ),
+
+      # dashboard pages -------------------------------------------------------#
+      nav_panel(
+        id = "intro",
+        title = "Introduction",
+        mod_intro_ui("intro1"),
       ),
 
 
-      # Sidebar ---------------------------------------------------------------#
-
-      sidebar = shinydashboardPlus::dashboardSidebar(
-
-        # set width
-        width = 300,
-
-        shinydashboard::sidebarMenu(
-
-          id = "sidebarmenu",
-
-          # summary of data selection
-          mod_pres_select_ui("pres_select_ui"),
-
-
-          # page navigation ---------------------------------------------------#
-
-          shinydashboard::menuItem(
-            "Introduction",
-            tabName = "intro",
-            icon = icon("dashboard")
-            ),
-
-          shinydashboard::menuItem(
-            "Explore data",
-            tabName = "explore",
-            icon = icon("dashboard")
-            ),
-
-          # data filters ------------------------------------------------------#
-
-          # note: these are grouped together in drop downs.
-
-          # date filters
-          shinydashboard::menuItem(
-            "Filter date",
-            tabName = "date_filter",
-            shinydashboard::menuSubItem(
-              mod_date_filter_ui("date_filter_ui"),
-              icon = NULL
-              )
-            )
-          )
+      nav_panel(
+        id = "explore",
+        title = "Explore data",
+        mod_explore_data_ui("explore_data_1"),
         ),
 
+      nav_panel(
+        id = "dev",
+        title = "dev layout",
+        mod_dev_layout_ui("dev_layout_1"),
+        ),
 
-      # dashboard body --------------------------------------------------------#
-
-      body = shinydashboard::dashboardBody(
-
-        shinydashboard::tabItems(
-          shinydashboard::tabItem("intro", mod_intro_ui("intro_1")),
-          shinydashboard::tabItem("explore", mod_explore_data_ui("explore_data_ui"))
-        )
-      )
+      nav_spacer(),
     )
+
+
   )
 }
-
-
 
 
 #' Add external Resources to the Application

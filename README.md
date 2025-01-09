@@ -37,7 +37,7 @@ this graph are for demonstration/exploration of code purposes only.
 As a basic, this application includes the following set up:
 
 - Code structure following `{golem}`
-- Shiny dashboard layout using `shinydashboardPlus`
+- Shiny dashboard layout using `{bslib}`
 - Modules with UIs & servers
 - R6 class objects for data storage and access across modules
 - Reactivity of R6 objects using `gargoyle`
@@ -57,13 +57,13 @@ shinyTemplate::run_app()
 
 ## About
 
-You are reading the doc about version : 0.0.0.9000
+You are reading the doc about version : 0.0.0.9001
 
 This README has been compiled on the
 
 ``` r
 Sys.time()
-#> [1] "2025-01-07 20:41:04 GMT"
+#> [1] "2025-01-09 16:22:59 GMT"
 ```
 
 Here are the tests results and package coverage:
@@ -71,19 +71,21 @@ Here are the tests results and package coverage:
 ``` r
 devtools::check(quiet = TRUE)
 #> ℹ Loading shinyTemplate
-#> ── R CMD check results ─────────────────────────── shinyTemplate 0.0.0.9000 ────
-#> Duration: 1m 36.1s
+#> ── R CMD check results ─────────────────────────── shinyTemplate 0.0.0.9001 ────
+#> Duration: 1m 52.9s
 #> 
 #> 0 errors ✔ | 0 warnings ✔ | 0 notes ✔
 ```
 
 ``` r
 covr::package_coverage()
-#> shinyTemplate Coverage: 64.89%
+#> shinyTemplate Coverage: 59.81%
 #> R/run_app.R: 0.00%
-#> R/server_utils.R: 0.00%
-#> R/mod_date_filter.R: 48.39%
-#> R/mod_explore_data.R: 63.64%
+#> R/utils_server.R: 0.00%
+#> R/utils_ui.R: 0.00%
+#> R/mod_date_filter.R: 50.00%
+#> R/mod_explore_data.R: 54.30%
+#> R/mod_dev_layout.R: 98.21%
 #> R/app_config.R: 100.00%
 #> R/app_r6.R: 100.00%
 #> R/app_server.R: 100.00%

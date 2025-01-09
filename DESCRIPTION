@@ -1,6 +1,6 @@
 Package: shinyTemplate
 Title: Shiny Template
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: 
     person("Steve", "Spreadborough", , "steves.coding@outlook.com", role = c("aut", "cre"))
 Description: Template for building Shiny Apps using golem, with basic
@@ -21,11 +21,12 @@ Imports:
     lubridate,
     plotly,
     reactlog,
-    shinydashboard,
-    shinydashboardPlus,
     stats19,
     stringr,
-    whereami
+    whereami,
+    DT,
+    bsicons,
+    bslib
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
