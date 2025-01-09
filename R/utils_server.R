@@ -189,8 +189,6 @@ app_metrics <- function(metric_ids,
     }
   }
 
-  globalVariables()
-
   output_data <- janitor::clean_names(output_data) |>
     remove_field(na)
 
