@@ -15,6 +15,8 @@ mod_date_filter_ui <- function(id) {
 
   tagList(
 
+    #tags$style(type = "text/css", plot_style),
+
     # date range
     dateRangeInput(ns("date_range"),
                    label = "Date range",
@@ -22,23 +24,12 @@ mod_date_filter_ui <- function(id) {
                    end = "2022-12-31",
                    startview = "year"),
 
-
-
     # pre defined periods
     selectInput(inputId = ns("date_period"),
                 label = "Period",
-                choices = c("All" = "all",
-                            "Last week" = "1_week",
-                            "Last 4 weeks" = "4_week",
-                            "Last Month" = "1_month",
-                            "Last 3 months" = "3_month",
-                            "Last 4 months" = "4_month",
-                            "Last 6 months" = "6_month",
-                            "Last Year" = "1_year",
-                            "Last 18 months" = "18_month",
-                            "Last 2 years" = "2_year",
-                            "Last 3 years" = "3_year"),
-                selected = c("All" = "all"))
+                choices = c("All" = "all"),
+                selected = c("All" = "all")
+                )
 
   )
 }
@@ -52,6 +43,8 @@ mod_date_filter_server <- function(id, dash_data){
   moduleServer(id, function(input, output, session){
 
     ns <- session$ns
+
+    #period_options <- dash_data$date_period_options
 
 
     # update the date range when user changes 'date_range'
@@ -70,17 +63,7 @@ mod_date_filter_server <- function(id, dash_data){
         updateSelectInput(session = session,
                           inputId = "date_period",
                           label = "Period",
-                          choices = c("All" = "all",
-                                      "Last week" = "1_week",
-                                      "Last 4 weeks" = "4_week",
-                                      "Last Month" = "1_month",
-                                      "Last 3 months" = "3_month",
-                                      "Last 4 months" = "4_month",
-                                      "Last 6 months" = "6_month",
-                                      "Last Year" = "1_year",
-                                      "Last 18 months" = "18_month",
-                                      "Last 2 years" = "2_year",
-                                      "Last 3 years" = "3_year"),
+                          choices = dash_data$date_period_options,
                           selected = c("All" = "all"))
       }
 
@@ -98,10 +81,11 @@ mod_date_filter_server <- function(id, dash_data){
       cat_where(where = paste0(whereami(), " - input$date_period"))
 
       # get the dates for the period selected
-      dates <- filter_ref_date(df = dash_data$date_ref,
-                               period = input$date_period,
-                               start = input$date_range[1],
-                               end = input$date_range[2])
+      dates <- dash_data$filter_ref_date(
+        period = input$date_period,
+        start = input$date_range[1],
+        end = input$date_range[2]
+        )
 
       # update dash data
       dash_data$date_range <- c(min(dates$date), max(dates$date))
@@ -120,6 +104,8 @@ mod_date_filter_server <- function(id, dash_data){
       # set the date_setter in dash_data to date_period - this is to prevent
       # circular update when ensuring the date_range and date_period align
       dash_data$date_setter <- "date_period"
+
+      print(dash_data$date_period)
     })
 
   })

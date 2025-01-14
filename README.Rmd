@@ -52,6 +52,8 @@ As a basic, this application includes the following set up:
 - Reactivity of R6 objects using `gargoyle`
 - Util functions used across the App
 - Unit testing
+- branch with different approach calculating time periods to test comparing
+efficiency using `shiny.benchmark` (in progress_)
 
 See NEWS for further developments. 
 

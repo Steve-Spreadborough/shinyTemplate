@@ -19,7 +19,8 @@ dateRangeInput. Note: this is the 'single source of truth' date range
 to be used across the App, and is set via dateRangeInput & updated
 from 'date_period' input.}
 
-\item{\code{date_period}}{variable that holds the 'date_period' input.}
+\item{\code{date_period_options}}{variable that holds list of options for the
+date_period input.}
 
 \item{\code{date_setter}}{variable indicator if `date_range` has been set via
 dateRangeInput or the 'date_period' input. Note: this is required to
@@ -43,6 +44,8 @@ Method 1: initialize object}
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-app_data-new}{\code{app_data$new()}}
+\item \href{#method-app_data-filter_ref_date}{\code{app_data$filter_ref_date()}}
+\item \href{#method-app_data-app_metrics}{\code{app_data$app_metrics()}}
 \item \href{#method-app_data-clone}{\code{app_data$clone()}}
 }
 }
@@ -55,6 +58,52 @@ Create R6 class object to get data for App.
 \if{html}{\out{<div class="r">}}\preformatted{app_data$new()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-app_data-filter_ref_date"></a>}}
+\if{latex}{\out{\hypertarget{method-app_data-filter_ref_date}{}}}
+\subsection{Method \code{filter_ref_date()}}{
+Filter dates from Date Range & Period UI input.
+
+Note: currently filters using a reference data frame, needs testing against
+approach that does it on the fly.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{app_data$filter_ref_date(period, start, end)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{period}}{period input from UI}
+
+\item{\code{start}}{start date}
+
+\item{\code{end}}{end date}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-app_data-app_metrics"></a>}}
+\if{latex}{\out{\hypertarget{method-app_data-app_metrics}{}}}
+\subsection{Method \code{app_metrics()}}{
+Calculate dashboard metrics
+
+Function gets metric data. Either calculated within function, or calls
+another function where more complex.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{app_data$app_metrics(metric_ids, ...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{metric_ids}}{ID of the metric to be used}
+
+\item{\code{...}}{other fields to group data by}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-app_data-clone"></a>}}

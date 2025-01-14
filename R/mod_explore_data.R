@@ -169,7 +169,7 @@ mod_explore_data_server <- function(id, dash_data){
       # log plot update
       cat_where(where = paste0(whereami(), " - update plot_data"))
 
-      explore_plot_details(input, dash_data)
+      explore_plot_details(ui_inputs = input, mod_data = dash_data)
 
     })
 
@@ -178,7 +178,7 @@ mod_explore_data_server <- function(id, dash_data){
 
 
       plot_data <- explore_plot_data()
-      #plot_data <- explore_plot_details()
+      #plot_data <- explore_plot_details(ui_inputs = input, mod_data = dash_data)
 
       cat(plot_data$title)
     })
@@ -188,7 +188,7 @@ mod_explore_data_server <- function(id, dash_data){
 
 
       plot_data <- explore_plot_data()
-      #plot_data <- explore_plot_details()
+      #plot_data <- explore_plot_details(ui_inputs = input, mod_data = dash_data)
 
       cat(plot_data$subtitle)
     })
@@ -215,7 +215,7 @@ mod_explore_data_server <- function(id, dash_data){
       # get the data for the plot
       plot_data <- explore_plot_data()
 
-      #plot_data <- explore_plot_details()
+      #plot_data <- explore_plot_details(ui_inputs = input, mod_data = dash_data)
 
       # if using group, make sure its a factor
       if (input$plot_group != "none") {

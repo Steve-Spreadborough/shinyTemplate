@@ -15,6 +15,8 @@ input$date_range <- c(as.Date("2021-01-01"), as.Date("2022-12-31"))
 
 dash_data$date_range <- input$date_range
 
+input$date_period <- dash_data$date_period_options[1]
+
 
 # mod_explore_data inputs ------------------------------------------------------
 

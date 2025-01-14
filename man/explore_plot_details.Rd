@@ -2,9 +2,9 @@
 % Please edit documentation in R/utils_server.R
 \name{explore_plot_details}
 \alias{explore_plot_details}
-\title{Caluclaye details for 'explore data' plot}
+\title{Calculate details for 'explore data' plot}
 \usage{
-explore_plot_details(ui_inputs = input, mod_data = dash_data)
+explore_plot_details(ui_inputs, mod_data)
 }
 \arguments{
 \item{ui_inputs}{the input list from the UI/module.}
@@ -12,5 +12,5 @@ explore_plot_details(ui_inputs = input, mod_data = dash_data)
 \item{mod_data}{R6 object with dashboard data}
 }
 \description{
-Caluclaye details for 'explore data' plot
+Calculate details for 'explore data' plot
 }
