@@ -31,8 +31,9 @@ app_data <- R6Class(
     #' from 'date_period' input.
     date_range = c(),
 
-    #' @field date_period variable that holds the 'date_period' input.
-    date_period = NULL,
+    #' @field date_period_options variable that holds list of options for the
+    #' date_period input.
+    date_period_options = NULL,
 
     #' @field date_setter variable indicator if `date_range` has been set via
     #' dateRangeInput or the 'date_period' input. Note: this is required to
@@ -73,6 +74,22 @@ app_data <- R6Class(
 
         progress$set(message = "Loading data", value = 0)
       }
+
+      # set date_period_options
+      self$date_period_options <- c(
+        "All" = "all",
+        "Current week" = "0_week_current",
+        "Current month" = "0_month_current",
+        "Current financial quarter" = "0_f_quarter_current",
+        "Current 12 months" = "11_month_current",
+        "Current financial year" = "0_f_year_current",
+        "Current 24 months" = "23_month_current",
+        "Last week" = "1_week",
+        "Last month" = "1_month",
+        "Last financial quarter" = "1_f_quarter",
+        "Last 12 months" = "12_month",
+        "Last 24 months" = "24_month"
+      )
 
       # hard coded start & end date
       start_date <- as.Date("2021-01-01")
@@ -122,12 +139,22 @@ app_data <- R6Class(
                     unique() %>%
                     mutate(roll_week = (n()-1):0),
                   by = "week_start") %>%
+        left_join(date_ref %>%
+                    select(fq_desc)  %>%
+                    unique() %>%
+                    mutate(roll_f_quarter = (n()-1):0),
+                  by = "fq_desc") %>%
+        left_join(date_ref %>%
+                    select(f_year)  %>%
+                    unique() %>%
+                    mutate(roll_f_year = (n()-1):0),
+                  by = "f_year") %>%
         mutate(
           roll_4week = as.integer(floor((roll_week+3)/4)),
           roll_3month = as.integer(floor((roll_month+2)/3)),
           roll_4month = as.integer(floor((roll_month+3)/4)),
-          roll_6month = as.integer(floor((roll_month+5)/6)),
-          roll_18month = as.integer(floor((roll_month+17)/18)),
+          #roll_6month = as.integer(floor((roll_month+5)/6)),
+          #roll_18month = as.integer(floor((roll_month+17)/18)),
           roll_year = as.integer(floor((roll_month+11)/12)),
           all_dates = 1)
 
@@ -162,11 +189,11 @@ app_data <- R6Class(
 
 
       # read in stats19 2021 data
-      suppressMessages(
-        suppressWarnings(
-          stats19_2021 <- get_stats19(2021, silent = TRUE)
-        )
-      )
+      #suppressMessages(
+      #  suppressWarnings(
+      #    stats19_2021 <- get_stats19(2021, silent = TRUE)
+      #  )
+      #)
 
       # update data download
       if (shiny::isRunning()) {progress$inc(2/n_data)}
@@ -183,7 +210,7 @@ app_data <- R6Class(
 
       # combine data
       self$stats19 <- rbind(
-        stats19_2021,
+        #stats19_2021,
         stats19_2022
         ) |>
         mutate(number_of_casualties = as.numeric(number_of_casualties),
@@ -196,6 +223,177 @@ app_data <- R6Class(
       cat_where(where = paste0(whereami(), " - created stats19"), color = "red")
 
 
+    },
+
+    #' @description
+    #' Filter dates from Date Range & Period UI input.
+    #'
+    #' Note: currently filters using a reference data frame, needs testing against
+    #' approach that does it on the fly.
+    #'
+    #' @param period period input from UI
+    #' @param start start date
+    #' @param end end date
+
+    filter_ref_date = function(period, start, end) {
+
+      # if date_period is not set, filter by the date range
+      if (period == "all" | is.null(period)) {
+
+        output <- self$date_ref |>
+          filter(date >= start & date <= end)
+
+      } else {
+
+        # work out number of periods
+        n_periods <- as.integer(gsub("_.*", "", period))
+
+        # if current, add the current period (i.e. 0 in the rolling fields)
+        if (grepl("current", period)) {
+          n_periods <- 0:n_periods
+        } else {
+          n_periods <- 1:n_periods
+        }
+
+        # filter data
+        if (grepl("week", period)) {
+
+          output <- self$date_ref |>
+            filter(roll_week %in% n_periods)
+
+        } else if (grepl("month", period)) {
+
+          output <- self$date_ref |>
+            filter(roll_month %in% n_periods)
+
+        } else if (grepl("f_quarter", period)) {
+
+          output <- self$date_ref |>
+            filter(roll_f_quarter %in% n_periods)
+
+        } else if (grepl("f_year", period)) {
+
+          output <- self$date_ref |>
+            filter(roll_f_year %in% n_periods)
+
+        } else if (grepl("year", period)) {
+
+          output <- self$date_ref |>
+            filter(roll_year %in% n_periods)
+
+        } else {
+
+          warning("looks like date filter not applied...")
+        }
+
+      }
+
+      return(output)
+    },
+
+
+    #' @description
+    #' Calculate dashboard metrics
+    #'
+    #' Function gets metric data. Either calculated within function, or calls
+    #' another function where more complex.
+    #'
+    #' @param metric_ids ID of the metric to be used
+    #' @param ... other fields to group data by
+    #'
+    #' @importFrom PHEindicatormethods phe_rate
+    #' @importFrom janitor clean_names
+    #' @importFrom stats setNames
+
+    app_metrics = function(metric_ids,
+                            ...) {
+
+
+      #metric_ids <- input$metric_id
+      #r6_data <- dash_data
+      #vars <- c("month", "speed_limit", "calender_year")
+
+      # get metric details
+      metric_details <- self$metric_meta |>
+        filter(metric_id %in% metric_ids)
+
+      # check metric id in r6 meta
+      if (nrow(metric_details) == 0) {
+        stop("metric_ids wrong")
+      }
+
+      # get the data
+      data <- self$stats19
+
+      # if using date fields in the ..., add them in from date_ref (again, needs
+      # assessing if more efficient on the fly than storing date_ref)
+      dot_fields <- list(...)
+
+      date_dot_fields <- dot_fields[dot_fields %in% colnames(self$date_ref) &
+                                      dot_fields != "date"]
+
+      if (length(date_dot_fields) > 0) {
+
+        date_fields <- c(as.character(date_dot_fields), "date")
+
+        data <- data |>
+          left_join(self$date_ref |>
+                      select(all_of(date_fields)),
+                    by = "date")
+
+      }
+
+      output_data <- data.frame()
+
+      # for each metric, get the data
+      for (m_id in metric_details$metric_id) {
+
+        # metric 1: n collisions --------------------------------------------------#
+
+        if (m_id == "n_collisions") {
+
+          # data
+          metric_data <- data |>
+            filter(date >= self$date_range[1] & date <= self$date_range[2]) |>
+            mutate(metric_id = m_id) |>
+            count(..., name = "value") |>
+            mutate(metric_id = m_id,
+                   lowercl = NA,
+                   uppercl = NA,
+                   numerator = NA,
+                   denominator = value)
+
+          output_data <- rbind(output_data, metric_data)
+
+          # metric 2: Rate of casualties per collision ------------------------------#
+
+        } else if (m_id == "rate_casual_per_collision") {
+
+          # data
+          metric_data <- data |>
+            filter(date >= self$date_range[1] & date <= self$date_range[2]) |>
+            mutate(metric_id = m_id) |>
+            group_by(...) |>
+            summarise(denominator = n(),
+                      numerator = sum(number_of_casualties),
+                      .groups = "drop") |>
+            phe_rate(x = numerator,
+                     n = denominator,
+                     multiplier = 100) |>
+            mutate(metric_id = m_id) |>
+            select(-confidence, -statistic, -method)
+
+          output_data <- rbind(output_data, metric_data)
+
+        }
+      }
+
+      output_data <- janitor::clean_names(output_data) |>
+        remove_field(na)
+
+      # return data
+      return(setNames(list(output_data, metric_details),
+                      c("data", "details")))
     }
   )
 )
