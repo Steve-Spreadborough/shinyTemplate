@@ -14,6 +14,12 @@
 #' @import bslib
 #' @import gargoyle
 
+# TO DO:
+# 1. Add indication of incomplete data - both "ends", in terms of lastest time
+#    period not complete but also starting, i.e. filtered for "current month"
+#    and then grouped by week, means first week might be incomplete...
+# 2. Move the list of options into R6 so have them in one place.
+
 mod_explore_data_ui <- function(id) {
 
   ns <- NS(id)
@@ -37,74 +43,58 @@ mod_explore_data_ui <- function(id) {
 
           # Data inputs
           nav_panel("Data",
-                    selectInput(inputId = ns("metric_id"),
-                                label = "Metric",
-                                multiple = TRUE,
-                                choices = c(
-                                  "Number of collisions" = "n_collisions",
-                                  "Rate of casualties per 100 collisions" = "rate_casual_per_collision"
-                                ),
-                                selected = "n_collisions"),
-                    selectInput(inputId = ns("plot_x_axis"),
-                                label = "x axis",
-                                choices = c(
-                                  "Date" = "date",
-                                  "Week" = "week_start",
-                                  "Month" = "month_year",
-                                  "Year" = "calender_year",
-                                  "Financial Quarter" = "fq_desc",
-                                  "Rolling 3 months" = "roll_3month",
-                                  "ISO Week" = "iso_year_week",
-                                  "Metric" = "metric_id",
-                                  "Value" = "value"
-                                ),
-                                selected = "date"),
-                    selectInput(inputId = ns("plot_y_axis"),
-                                label = "y axis",
-                                choices = c(
-                                  "Value" = "value",
-                                  "Metric" = "metric_id"
-                                ),
-                                selected = "date"),
-                    selectInput(inputId = ns("plot_group"),
-                                label = "Group data",
-                                choices = c(
-                                  "None" = "none",
-                                  "Metric" = "metric_id",
-                                  "Accident severity" = "accident_severity",
-                                  "Police force" = "police_force",
-                                  "Road speed limit" =  "speed_limit",
-                                  "Day of week"  = "day_of_week",
-                                  "Year" = "calender_year"
-                                ),
-                                selected = "None"),
-                    selectInput(inputId = ns("plot_facet"),
-                                label = "Facet plot",
-                                choices = c(
-                                  "None" = "none",
-                                  "Metric" = "metric_id",
-                                  "Accident severity" = "accident_severity",
-                                  "Police force" = "police_force",
-                                  "Road speed limit" =  "speed_limit",
-                                  "Day of week"  = "day_of_week",
-                                  "Year" = "calender_year"
-                                ),
-                                selected = "None")
+                    selectInput(
+                      inputId = ns("metric_id"),
+                      label = "Metric",
+                      multiple = TRUE,
+                      choices = c("Number of collisions" = "n_collisions"),
+                      selected = "Number of collisions"
+                      ),
+                    selectInput(
+                      inputId = ns("plot_x_axis"),
+                      label = "x axis",
+                      choices = c("Date" = "date"),
+                      selected = "Date"
+                      ),
+                    selectInput(
+                      inputId = ns("plot_y_axis"),
+                      label = "y axis",
+                      choices = c("Value" = "value"),
+                      selected = "Value"
+                      ),
+                    selectInput(
+                      inputId = ns("plot_group"),
+                      label = "Group data",
+                      choices = c("None" = "none"),
+                      selected = "None"
+                      ),
+                    selectInput(
+                      inputId = ns("plot_facet"),
+                      label = "Facet plot",
+                      choices = c("None" = "none"),
+                      selected = "None")
                     ),
 
+          # Graph formatting settings
           nav_panel("Graph",
-                    radioButtons(inputId = ns("plot_cis"),
-                                 label = "Confidence intervals",
-                                 choices = c("Auto", "Yes", "No"),
-                                 selected = "Auto"),
-                    radioButtons(inputId = ns("plot_legend"),
-                                 label = "Legend",
-                                 choices = c("Auto", "Yes", "No"),
-                                 selected = "Auto"),
-                    radioButtons(inputId = ns("plot_type"),
-                                 label = "Plot type",
-                                 choices = c("Line", "Bar"),
-                                 selected = "Line")
+                    radioButtons(
+                      inputId = ns("plot_cis"),
+                      label = "Confidence intervals",
+                      choices = c("Auto", "Yes", "No"),
+                      selected = "Auto"
+                      ),
+                    radioButtons(
+                      inputId = ns("plot_legend"),
+                      label = "Legend",
+                      choices = c("Auto", "Yes", "No"),
+                      selected = "Auto"
+                      ),
+                    radioButtons(
+                      inputId = ns("plot_type"),
+                      label = "Plot type",
+                      choices = c("Line", "Bar"),
+                      selected = "Line"
+                      )
                     )
           )
         ),
@@ -112,13 +102,15 @@ mod_explore_data_ui <- function(id) {
       # main panel to display plot & data
       navset_card_underline(
 
-        title = textOutput(ns("plot_title")),
-
         # Panel with plot ----
         nav_panel("Plot", plotly::plotlyOutput(ns("plot_explore"))),
 
         # Panel with table ----
-        nav_panel("Table", tableOutput(ns("explore_data")))
+        nav_panel("Table", tableOutput(ns("explore_data"))),
+
+        # other settings
+        title = textOutput(ns("plot_title")),
+        full_screen = TRUE
         )
     )
   )
@@ -137,28 +129,48 @@ mod_explore_data_server <- function(id, dash_data){
 
     ns <- session$ns
 
-    # code to set metric id drop down options from metrics available in dash_data
-    # note: doing it like this means the plot below refreshes twice initially,
-    # and likely more inefficient than just listing all the metric ids in UI
-    # above as has to go back to the server & the R6 to get the details (hence
-    # not used).
+    # Add the options on the select inputs
+    # note:
+    #  1. this is to avoid having to type out the same list of options in
+    #     multiple places (e.g. unit tests, other modules using same options)
+    #  2. ensure 'selected' option the same as in UI above to avoid invalidating
+    #     the further outputs (and making it re-run when dashboard is loaded)
 
-    #output$metric_select <- renderUI({
+    # metrics
+    updateSelectInput(
+      inputId = "metric_id",
+      choices = setNames(dash_data$metric_meta$metric_id,
+                         dash_data$metric_meta$metric_name),
+      selected = "n_collisions"
+    )
 
-      ## log
-      #cat_where(where = paste0(whereami(), " - output$metric_select"))
+    # x axis
+    updateSelectInput(
+      inputId = "plot_x_axis",
+      choices = dash_data$explore_x_axis,
+      selected = "date"
+    )
 
-      #metric_ids <- dash_data$metric_meta$metric_id
-      #names(metric_ids) <- dash_data$metric_meta$metric_name
+    # y axis
+    updateSelectInput(
+      inputId = "plot_y_axis",
+      choices = dash_data$explore_y_axis,
+      selected = "value"
+    )
 
-      ## output
-      #updateSelectInput(session,
-      #                  inputId = ns("metric_select"),
-      #            #label = "Metric",
-      #            choices = metric_ids,
-      #            selected = metric_ids[1])
+    # group variable
+    updateSelectInput(
+      inputId = "plot_group",
+      choices = dash_data$explore_group_facet,
+      selected = "none"
+    )
 
-     #})
+    # facet variable
+    updateSelectInput(
+      inputId = "plot_facet",
+      choices = dash_data$explore_group_facet,
+      selected = "none"
+    )
 
     # update data & details for plot
     explore_plot_data <- reactive({
@@ -262,8 +274,6 @@ mod_explore_data_server <- function(id, dash_data){
           #geom_bar(stat = "identity")
 
       }
-
-
 
       # add confidence intervals
       if (input$plot_cis %in% c("Auto", "Yes") &

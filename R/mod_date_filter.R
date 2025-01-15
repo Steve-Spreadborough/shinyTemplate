@@ -15,8 +15,6 @@ mod_date_filter_ui <- function(id) {
 
   tagList(
 
-    #tags$style(type = "text/css", plot_style),
-
     # date range
     dateRangeInput(ns("date_range"),
                    label = "Date range",
@@ -44,17 +42,32 @@ mod_date_filter_server <- function(id, dash_data){
 
     ns <- session$ns
 
-    #period_options <- dash_data$date_period_options
+    # set the date range to that provided in dash_data to ensure consistency
+    # (i.e. if date range set dynamically in R6 & forget to update UI etc)
+    # note: this will invalidate some of the following reactives if different
+    # from hard coded dates in UI & force them to re-run, but not process heavy.
+    updateDateRangeInput(
+      inputId = "date_range",
+      start = dash_data$data_date_range[1],
+      end = dash_data$data_date_range[2]
+    )
 
+    # update list of date period options from R6
+    updateSelectInput(
+      inputId = "date_period",
+      choices = dash_data$date_period_options
+    )
 
     # update the date range when user changes 'date_range'
     observeEvent(input$date_range, {
 
       # log
-      cat_where(where = paste0(whereami(), " - input$date_range"))
+      cat_where(where = paste0(whereami(), " - input$date_range update"))
 
       # update dash_data
       dash_data$date_range <- c(input$date_range[1], input$date_range[2])
+
+      #print(paste0(dash_data$date_range, collapse = " to "))
 
       # update the date period to 'All', only if daterange is triggered by
       # dateRangeInput and not from the user updating the 'date_period'
@@ -68,17 +81,18 @@ mod_date_filter_server <- function(id, dash_data){
       }
 
       dash_data$date_setter <- "date_range"
+
+      # trigger that the 'date_range' has been updated to invalidate relevant
+      # reactives
+      #trigger("date_range")
       trigger("date_range")
     })
-
-
-    # OUTSTANDING: needs to go back to original dates when select "All"
 
     # update the date range when user changes 'date_period'
     observeEvent(input$date_period, {
 
-      # log
-      cat_where(where = paste0(whereami(), " - input$date_period"))
+      # # log
+      cat_where(where = paste0(whereami(), " - input$date_period update"))
 
       # get the dates for the period selected
       dates <- dash_data$filter_ref_date(
@@ -89,10 +103,6 @@ mod_date_filter_server <- function(id, dash_data){
 
       # update dash data
       dash_data$date_range <- c(min(dates$date), max(dates$date))
-
-      # trigger that the 'date_range' has been updated to invalidate relevant
-      # reactives
-      #trigger("date_range")
 
       # update the date range input so the 2 filters are consistent
       updateDateRangeInput(session = session,
@@ -105,7 +115,7 @@ mod_date_filter_server <- function(id, dash_data){
       # circular update when ensuring the date_range and date_period align
       dash_data$date_setter <- "date_period"
 
-      print(dash_data$date_period)
+      #print(dash_data$date_period)
     })
 
   })

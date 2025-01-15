@@ -14,13 +14,24 @@ Create R6 class object to read in data for App.
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{date_range}}{variable to hold start and end date from
+\item{\code{date_range}}{variable to hold start and end date from 'master'
 dateRangeInput. Note: this is the 'single source of truth' date range
 to be used across the App, and is set via dateRangeInput & updated
 from 'date_period' input.}
 
+\item{\code{data_date_range}}{the date range available from the data set. Note
+this is set when initialised and should not be edited. Values used in
+the initial 'master' dateRangeInput & when 'period' set to 'All'. Also
+used to set limit on dates for 'master' dateRangeInput (TO BE DONE!).}
+
 \item{\code{date_period_options}}{variable that holds list of options for the
 date_period input.}
+
+\item{\code{explore_x_axis}}{options for x axis in explore plot.}
+
+\item{\code{explore_y_axis}}{options for y axis in explore plot.}
+
+\item{\code{explore_group_facet}}{option for group/facet in explore plot.}
 
 \item{\code{date_setter}}{variable indicator if `date_range` has been set via
 dateRangeInput or the 'date_period' input. Note: this is required to

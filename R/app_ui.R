@@ -79,10 +79,6 @@ app_ui <- function(request) {
 
         # Filter summary
         bslib::card(
-          #bslib::accordion_panel(
-          #value = "Data summary",
-          #full_screen = TRUE,
-          #card_header("Data: "),
           mod_pres_select_ui("pres_select_ui")
         ),
 

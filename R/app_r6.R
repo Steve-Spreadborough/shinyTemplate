@@ -25,15 +25,30 @@ app_data <- R6Class(
   "app_data",
   public = list(
 
-    #' @field date_range variable to hold start and end date from
+    #' @field date_range variable to hold start and end date from 'master'
     #' dateRangeInput. Note: this is the 'single source of truth' date range
     #' to be used across the App, and is set via dateRangeInput & updated
     #' from 'date_period' input.
     date_range = c(),
 
+    #' @field data_date_range the date range available from the data set. Note
+    #' this is set when initialised and should not be edited. Values used in
+    #' the initial 'master' dateRangeInput & when 'period' set to 'All'. Also
+    #' used to set limit on dates for 'master' dateRangeInput (TO BE DONE!).
+    data_date_range = c(),
+
     #' @field date_period_options variable that holds list of options for the
     #' date_period input.
     date_period_options = NULL,
+
+    #' @field explore_x_axis options for x axis in explore plot.
+    explore_x_axis = NULL,
+
+    #' @field explore_y_axis options for y axis in explore plot.
+    explore_y_axis = NULL,
+
+    #' @field explore_group_facet option for group/facet in explore plot.
+    explore_group_facet = NULL,
 
     #' @field date_setter variable indicator if `date_range` has been set via
     #' dateRangeInput or the 'date_period' input. Note: this is required to
@@ -67,7 +82,7 @@ app_data <- R6Class(
         progress <- shiny::Progress$new()
 
         # set number data processes to update on
-        n_data <- 4
+        n_data <- 5
 
         # Make sure it closes when we exit this reactive, even if there's an error
         on.exit(progress$close())
@@ -75,7 +90,21 @@ app_data <- R6Class(
         progress$set(message = "Loading data", value = 0)
       }
 
-      # set date_period_options
+
+      # 1. Set variables & list of input options to be used in UI -------------#
+
+      # hard coded start & end date (consider deriving this from data set being
+      # read in if needs to be dynamic).
+      start_date <- as.Date("2021-01-01")
+      end_date <- as.Date("2022-12-31")
+
+      # set the data date range - note this is used to set the initial 'master'
+      # dateRangeInput values & to set the dateRangeInput values when 'period'
+      # is set to 'All'.
+      self$data_date_range[1] <- start_date
+      self$data_date_range[2] <- end_date
+
+      # set date_period_options (used in mod_date_filter)
       self$date_period_options <- c(
         "All" = "all",
         "Current week" = "0_week_current",
@@ -91,12 +120,40 @@ app_data <- R6Class(
         "Last 24 months" = "24_month"
       )
 
-      # hard coded start & end date
-      start_date <- as.Date("2021-01-01")
-      end_date <- as.Date("2022-12-31")
+      # set explore_x_axis (used in mod_explore_data)
+      self$explore_x_axis <- c(
+        "Date" = "date",
+        "Week" = "week_start",
+        "Month" = "month_year",
+        "Year" = "calender_year",
+        "Financial Quarter" = "fq_desc",
+        "Rolling 3 months" = "roll_3month",
+        "ISO Week" = "iso_year_week",
+        "Metric" = "metric_id",
+        "Value" = "value"
+      )
 
-      #self$date_range[1] <- start_date
-      #self$date_range[2] <- end_date
+      # set explore_y_axis (used in mod_explore_data)
+      self$explore_y_axis <- c(
+        "Value" = "value",
+        "Metric" = "metric_id"
+      )
+
+      # set explore_group_facet (used in mod_explore_data)
+      self$explore_group_facet <- c(
+        "None" = "none",
+        "Metric" = "metric_id",
+        "Accident severity" = "accident_severity",
+        "Police force" = "police_force",
+        "Road speed limit" =  "speed_limit",
+        "Day of week"  = "day_of_week",
+        "Year" = "calender_year"
+      )
+
+      # update data download
+      if (shiny::isRunning()) {progress$inc(1/n_data)}
+
+      # 2. Read in/create reference data --------------------------------------#
 
       # create date reference table (note: needs comparison to calculating
       # required field the fly in terms of efficiency)
@@ -159,7 +216,7 @@ app_data <- R6Class(
           all_dates = 1)
 
       # update data download
-      if (shiny::isRunning()) {progress$inc(1/n_data)}
+      if (shiny::isRunning()) {progress$inc(2/n_data)}
 
       # log - make it red as should only happen once
       cat_where(where = paste0(whereami(), " - created date_ref"), color = "red")
@@ -189,14 +246,16 @@ app_data <- R6Class(
 
 
       # read in stats19 2021 data
-      #suppressMessages(
-      #  suppressWarnings(
-      #    stats19_2021 <- get_stats19(2021, silent = TRUE)
-      #  )
-      #)
+      suppressMessages(
+        suppressWarnings(
+          stats19_2021 <- get_stats19(2021, silent = TRUE)
+        )
+      )
 
       # update data download
-      if (shiny::isRunning()) {progress$inc(2/n_data)}
+      if (shiny::isRunning()) {progress$inc(3/n_data)}
+
+      # 3 Read in main dashboard data -----------------------------------------#
 
       # read in stats19 2022 data
       suppressMessages(
@@ -206,18 +265,18 @@ app_data <- R6Class(
       )
 
       # update data download
-      if (shiny::isRunning()) {progress$inc(3/n_data)}
+      if (shiny::isRunning()) {progress$inc(4/n_data)}
 
       # combine data
       self$stats19 <- rbind(
-        #stats19_2021,
+        stats19_2021,
         stats19_2022
         ) |>
         mutate(number_of_casualties = as.numeric(number_of_casualties),
                number_of_vehicles = as.numeric(number_of_vehicles))
 
       # update data download
-      if (shiny::isRunning()) {progress$inc(4/n_data)}
+      if (shiny::isRunning()) {progress$inc(5/n_data)}
 
       # log - make it red as should only happen once
       cat_where(where = paste0(whereami(), " - created stats19"), color = "red")
