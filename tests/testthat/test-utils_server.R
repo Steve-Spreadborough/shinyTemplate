@@ -240,8 +240,10 @@ testthat::test_that("utils_server - explore_plot_details", {
     mod_data = dash_data
   )
 
+  # note that it should have changed test_input$plot_x_axis from 'date' to
+  # 'day_month' as grouping the data by year
   expect_true(
-    test_input$plot_x_axis %in% colnames(test_7$data)
+    "day_month" %in% colnames(test_7$data)
   )
 
   # x axis date but grouping by year, should have changed 'date' to 'day_month'

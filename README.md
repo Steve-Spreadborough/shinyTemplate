@@ -11,15 +11,15 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 
 ## Details
 
-This is a project used to develop functionality for Shiny Apps in a
-single place which can then be used as a template for creating actual
-Apps from. The idea therefore being that everything in this project
-should be reproducible and easy to copy/replicate to other Shiny Apps to
-support creating and rolling out ‘production’ apps with similar
-layouts/functionality..
+This is a project used to experiment with & develop functionality for
+Shiny Apps in a single place which can then be used as a template for
+creating production Apps.
 
-This project is very much developmental and reflects authors development
-of code and knowledge around Shiny. Contributions and suggestions on
+Everything in this project should be reproducible and easy to
+copy/replicate to other Shiny Apps to support creating and rolling out
+‘production’ apps with similar layouts/functionality.
+
+This project is very much experimental. Contributions and suggestions on
 improving code, following the code of conduct, are welcome.
 
 The layout of code follows the use of modules & R6 Class object for
@@ -31,8 +31,9 @@ re using R6 class objects for data storage.
 
 **Important**: This app uses data from the `stats19` package,
 [here](https://github.com/ropensci/stats19), containing crash data. The
-app uses this data purely as example data and the outputs including in
-this graph are for demonstration/exploration of code purposes only.
+app uses this data purely as example data and the **outputs included in
+this App are for demonstration/exploration of code purposes only and are
+not official analysis of the data**.
 
 As a basic, this application includes the following set up:
 
@@ -43,6 +44,12 @@ As a basic, this application includes the following set up:
 - Reactivity of R6 objects using `gargoyle`
 - Util functions used across the App
 - Unit testing
+- branch with different approach calculating time periods to test
+  comparing efficiency using `shiny.benchmark` (in progress…)
+
+Note: another repo based on `{shinydashboard}`, as opposed to `{bslib}`,
+is [here](https://github.com/Steve-Spreadborough/shinydashTemplate),
+though the code is not as developed.
 
 See NEWS for further developments.
 
@@ -63,7 +70,7 @@ This README has been compiled on the
 
 ``` r
 Sys.time()
-#> [1] "2025-01-09 16:22:59 GMT"
+#> [1] "2025-01-21 10:52:49 GMT"
 ```
 
 Here are the tests results and package coverage:
@@ -72,22 +79,25 @@ Here are the tests results and package coverage:
 devtools::check(quiet = TRUE)
 #> ℹ Loading shinyTemplate
 #> ── R CMD check results ─────────────────────────── shinyTemplate 0.0.0.9001 ────
-#> Duration: 1m 52.9s
+#> Duration: 2m 40.3s
 #> 
-#> 0 errors ✔ | 0 warnings ✔ | 0 notes ✔
+#> ❯ checking for future file timestamps ... NOTE
+#>   unable to verify current time
+#> 
+#> 0 errors ✔ | 0 warnings ✔ | 1 note ✖
 ```
 
 ``` r
 covr::package_coverage()
-#> shinyTemplate Coverage: 59.81%
+#> shinyTemplate Coverage: 76.44%
 #> R/run_app.R: 0.00%
-#> R/utils_server.R: 0.00%
 #> R/utils_ui.R: 0.00%
-#> R/mod_date_filter.R: 50.00%
-#> R/mod_explore_data.R: 54.30%
+#> R/mod_date_filter.R: 56.60%
+#> R/utils_server.R: 63.64%
+#> R/mod_explore_data.R: 71.11%
+#> R/app_r6.R: 93.36%
 #> R/mod_dev_layout.R: 98.21%
 #> R/app_config.R: 100.00%
-#> R/app_r6.R: 100.00%
 #> R/app_server.R: 100.00%
 #> R/app_ui.R: 100.00%
 #> R/mod_intro.R: 100.00%
