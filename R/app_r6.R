@@ -106,6 +106,7 @@ app_data <- R6Class(
 
       # set date_period_options (used in mod_date_filter)
       self$date_period_options <- c(
+        "Date range" = "date_range",
         "All" = "all",
         "Current week" = "0_week_current",
         "Current month" = "0_month_current",
@@ -296,11 +297,19 @@ app_data <- R6Class(
 
     filter_ref_date = function(period, start, end) {
 
-      # if date_period is not set, filter by the date range
-      if (period == "all" | is.null(period)) {
+
+      # if period is 'date_range' then filter using start & end
+      if (period == "date_range") {
 
         output <- self$date_ref |>
           filter(date >= start & date <= end)
+
+      # if date_period 'all', then set to the start & end date of the data
+      } else if (period == "all") {
+
+        output <- self$date_ref |>
+          filter(date >= self$data_date_range[1] &
+                   date <= self$data_date_range[2])
 
       } else {
 
@@ -348,6 +357,23 @@ app_data <- R6Class(
       }
 
       return(output)
+    },
+
+
+    #' @description
+    #'  set factor levels for fields in data
+    #'
+    #' @param data data frame to set pre defined factor levels to
+
+    set_factor_levels = function(data) {
+
+
+      if ("month" %in% colnames(data)) {
+        data <- data |>
+          mutate(month = factor(month, levels = month.abb))
+      }
+
+      return(data)
     },
 
 

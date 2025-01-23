@@ -25,8 +25,8 @@ mod_date_filter_ui <- function(id) {
     # pre defined periods
     selectInput(inputId = ns("date_period"),
                 label = "Period",
-                choices = c("All" = "all"),
-                selected = c("All" = "all")
+                choices = c("Date range" = "date_range"),
+                selected = c("Date range" = "date_range")
                 )
 
   )
@@ -67,8 +67,6 @@ mod_date_filter_server <- function(id, dash_data){
       # update dash_data
       dash_data$date_range <- c(input$date_range[1], input$date_range[2])
 
-      #print(paste0(dash_data$date_range, collapse = " to "))
-
       # update the date period to 'All', only if daterange is triggered by
       # dateRangeInput and not from the user updating the 'date_period'
       if (dash_data$date_setter == "date_range") {
@@ -77,14 +75,13 @@ mod_date_filter_server <- function(id, dash_data){
                           inputId = "date_period",
                           label = "Period",
                           choices = dash_data$date_period_options,
-                          selected = c("All" = "all"))
+                          selected = c("Date range" = "date_range"))
       }
 
       dash_data$date_setter <- "date_range"
 
       # trigger that the 'date_range' has been updated to invalidate relevant
       # reactives
-      #trigger("date_range")
       trigger("date_range")
     })
 

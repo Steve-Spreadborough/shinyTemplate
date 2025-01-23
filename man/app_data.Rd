@@ -56,6 +56,7 @@ Method 1: initialize object}
 \itemize{
 \item \href{#method-app_data-new}{\code{app_data$new()}}
 \item \href{#method-app_data-filter_ref_date}{\code{app_data$filter_ref_date()}}
+\item \href{#method-app_data-set_factor_levels}{\code{app_data$set_factor_levels()}}
 \item \href{#method-app_data-app_metrics}{\code{app_data$app_metrics()}}
 \item \href{#method-app_data-clone}{\code{app_data$clone()}}
 }
@@ -90,6 +91,23 @@ approach that does it on the fly.
 \item{\code{start}}{start date}
 
 \item{\code{end}}{end date}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-app_data-set_factor_levels"></a>}}
+\if{latex}{\out{\hypertarget{method-app_data-set_factor_levels}{}}}
+\subsection{Method \code{set_factor_levels()}}{
+set factor levels for fields in data
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{app_data$set_factor_levels(data)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{data}}{data frame to set pre defined factor levels to}
 }
 \if{html}{\out{</div>}}
 }

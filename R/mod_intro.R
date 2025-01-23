@@ -22,7 +22,29 @@ mod_intro_ui <- function(id) {
 
         card(
           full_screen = TRUE,
-          p("Text here")
+          p("This is an example Shiny dashboard that uses modules, golem,
+            bslibs & R6 class object to share data between modules."),
+          p("The 'Explore data' tab contains a plot with options of different
+            metrics and settings, including options to group & fact the data
+            by and fields to use in the x & y axis. This essentially acts in a
+            similar way to a pivot table."),
+          p("p creates a paragraph of text."),
+          p("A new p() command starts a new paragraph. Supply a style attribute to change the format of the entire paragraph.", style = "font-family: 'times'; font-si16pt"),
+          strong("strong() makes bold text."),
+          em("em() creates italicized (i.e, emphasized) text."),
+          br(),
+          code("code displays your text similar to computer code"),
+          div("div creates segments of text with a similar style. This division of text is all blue because I passed the argument 'style = color:blue' to div", style = "color:blue"),
+          br(),
+          p("span does the same thing as div, but it works with",
+            span("groups of words", style = "color:blue"),
+            "that appear inside a paragraph."),
+          p("tags$ul and tags$li can be used to write bullet points:"),
+          tags$ul(
+            tags$li("First list item"),
+            tags$li("Second list item"),
+            tags$li("Third list item")
+          )
           ),
 
         layout_columns(

@@ -32,7 +32,7 @@ testthat::test_that("app_data - filter_ref_date", {
   date_1 <- dash_data$filter_ref_date(
                             start = start_date,
                             end = end_date,
-                            period = "all"
+                            period = "date_range"
                             )
 
   expect_true(max(date_1$date) == end_date)
@@ -45,7 +45,7 @@ testthat::test_that("app_data - filter_ref_date", {
   date_2 <- dash_data$filter_ref_date(
     start = start_date,
     end = end_date,
-    period = "all"
+    period = "date_range"
     )
 
   expect_true(max(date_2$date) == end_date)
@@ -57,7 +57,7 @@ testthat::test_that("app_data - filter_ref_date", {
   all_periods <- dash_data$filter_ref_date(
     start = start_date,
     end = end_date,
-    period = "all"
+    period = "date_range"
     )
 
   expect_equal(date_2, all_periods)

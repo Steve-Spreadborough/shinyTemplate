@@ -18,7 +18,6 @@
 # 1. Add indication of incomplete data - both "ends", in terms of lastest time
 #    period not complete but also starting, i.e. filtered for "current month"
 #    and then grouped by week, means first week might be incomplete...
-# 2. Move the list of options into R6 so have them in one place.
 
 mod_explore_data_ui <- function(id) {
 
@@ -255,6 +254,7 @@ mod_explore_data_server <- function(id, dash_data){
 
       # create the plot
       plot <- plot_data$data |>
+        dash_data$set_factor_levels() |>
         ggplot(aes(x = {{ plot_x_axis }},
                    y = {{ plot_y_axis }},
                    group = {{ plot_group }},

@@ -25,13 +25,13 @@ input$date_period <- dash_data$date_period_options[1]
 input$metric_id <- setNames(dash_data$metric_meta$metric_id,
                             dash_data$metric_meta$metric_name)
 
-input$plot_group <- dash_data$explore_group_facet[3]
+input$plot_group <- dash_data$explore_group_facet[7]
 
-input$plot_facet <- dash_data$explore_group_facet[5]
+input$plot_facet <- dash_data$explore_group_facet[1]
 
-input$plot_x_axis <- dash_data$explore_x_axis[2]
+input$plot_x_axis <- dash_data$explore_x_axis[3]
 
-input$plot_y_axis <-  dash_data$explore_y_axis[2]
+input$plot_y_axis <-  dash_data$explore_y_axis[1]
 
 input$plot_cis <- c("Auto", "Yes", "No")[3]
 
