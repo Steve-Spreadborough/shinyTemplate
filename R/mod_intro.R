@@ -32,10 +32,9 @@ mod_intro_ui <- function(id) {
           p("A new p() command starts a new paragraph. Supply a style attribute to change the format of the entire paragraph.", style = "font-family: 'times'; font-si16pt"),
           strong("strong() makes bold text."),
           em("em() creates italicized (i.e, emphasized) text."),
-          br(),
           code("code displays your text similar to computer code"),
           div("div creates segments of text with a similar style. This division of text is all blue because I passed the argument 'style = color:blue' to div", style = "color:blue"),
-          br(),
+          div("Use .css file saved in inst/app/www to set custom styles", class = "positive-text2"),
           p("span does the same thing as div, but it works with",
             span("groups of words", style = "color:blue"),
             "that appear inside a paragraph."),
@@ -51,12 +50,24 @@ mod_intro_ui <- function(id) {
           card(
             card_header("plot 1"),
             full_screen = TRUE,
-            p("Plot here")
+            p(
+              span("word 1", class = "positive-text"),
+              span("word 2 is a lot longer", class = "positive-text"),
+              span("word 3", class = "positive-text"),
+              span("word 4", class = "positive-text"),
+              span("word 5 is longish", class = "positive-text")
+              )
           ),
           card(
             full_screen = TRUE,
             card_header("plot 2"),
-            p("Plot here")
+            div(
+              span("word 1", class = "positive-text2"),
+              span("word 2 is a lot longer", class = "positive-text2"),
+              span("word 3", class = "positive-text2"),
+              span("word 4", class = "positive-text2"),
+              span("word 5 is longish", class = "positive-text2")
+            )
           ),
           card(
             full_screen = TRUE,

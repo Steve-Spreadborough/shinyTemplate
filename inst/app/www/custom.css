@@ -1,0 +1,45 @@
+
+
+.mystyle {
+  color: black;
+  font-weight: bold;
+  font-size: 30px;
+}
+
+
+/* style for positive text - dark green text in light green box*/
+.positive-text {
+    background: #cfc;
+    border: 1px solid green;
+    /*border-left: 3px solid #f36d33;*/
+    border-radius: 5px;
+    color: green;
+    page-break-inside: avoid;
+    font-family: monospace;
+    font-size: 15px;
+    line-height: 1.6;
+    /*margin-bottom: 0.1em;*/
+    max-width: 100%;
+    overflow: auto;
+    padding: 0.2em 0.5em;
+    display: inline-block;
+    word-wrap: break-word;
+}
+
+
+.positive-text2 {
+    background: #cfc;
+    border: 1px solid green;
+    /*border-left: 3px solid #f36d33;*/
+    color: green;
+    page-break-inside: avoid;
+    font-family: monospace;
+    font-size: 15px;
+    line-height: 1.6;
+    /*margin-bottom: 0.1em;*/
+    max-width: 100%;
+    overflow: auto;
+    padding: 0.2em 0.5em;
+    display: inline-block;
+    word-wrap: break-word;
+}
